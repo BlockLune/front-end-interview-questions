@@ -627,3 +627,48 @@ CSS Transition（过渡）是一组用于控制简单动画效果的属性，它
      border-image: linear-gradient(to bottom, #9b59b6, #9b59b6) 1 stretch;
    }
    ```
+
+## 介绍一下 `flex: x y z;`
+
+`flex: x y z;` 是 CSS Flexbox 布局中对 `flex-grow`、`flex-shrink`、`flex-basis` 三个属性的复合缩写。完整形式下：
+
+- **x** 对应 `flex-grow`（扩展能力）
+- **y** 对应 `flex-shrink`（收缩能力）
+- **z** 对应 `flex-basis`（基准尺寸）
+
+默认值为 `flex: 0 1 auto`，即不允许扩展、允许收缩、基准尺寸为基于内容的自动尺寸。
+
+该属性支持简写，具体的规则可参看下面的参考文档。此处列出一些常用的：
+
+1. `**flex: 1**` → 等价于 `flex: 1 1 0%`（等分布局首选）
+2. `**flex: auto**` → 等价于 `flex: 1 1 auto`（基于内容尺寸扩展）
+3. `**flex: none**` → 等价于 `flex: 0 0 auto`（完全固定尺寸）
+
+> [!tip]
+> `flex-basis` 值为 `0%` 和 `auto` 的区别：
+>
+> - `flex-basis: 0%` 强制忽略内容宽度，以剩余空间为分配基准；
+> `flex-basis: auto` 则优先考虑内容固有尺寸。
+
+## 介绍一下 CSS 中如何限制文本行数，以及超长显示省略号
+
+默认情况下，文本会自动换行。如果容器不够大，则会溢出。
+
+为了实现单行文本、超长截断并显示省略号，需要：
+
+- 使用 `white-space: nowrap;` 来阻止换行；
+- 使用 `overflow: hidden;` 来隐藏溢出的内容；
+- 使用 `text-overflow: ellipsis;` 来设置超长样式为省略号。
+
+下面是另一种方式，并且该方式支持任意行数：
+
+```css
+.line-clamp-NUMBER {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: NUMBER;
+}
+```
+
+在线演示：[Tailwind Play](https://play.tailwindcss.com/TwAUEpZdKz)
