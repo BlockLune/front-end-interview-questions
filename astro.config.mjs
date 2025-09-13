@@ -2,11 +2,14 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import { remarkAlert } from 'remark-github-blockquote-alert';
+import remarkMath from 'remark-math';
+import rehypeMathjax from 'rehype-mathjax';
 
 // https://astro.build/config
 export default defineConfig({
   markdown: {
-    remarkPlugins: [remarkAlert],
+    remarkPlugins: [remarkAlert, remarkMath],
+    rehypePlugins: [rehypeMathjax],
   },
 	integrations: [
 		starlight({
