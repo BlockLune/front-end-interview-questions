@@ -1802,9 +1802,9 @@ Object.create(prototype, propertiesObject)：创建一个新对象，将新对�
 
 ES6 引入的新语法，用于定义“类”，使创建对象和继承更加简洁直观。在此之前，旧语法：
 
-- 原型链复杂易混淆
-- 私有成员实现困难
-- 可读性低
+- **原型链复杂易混淆**：使用原型链模拟“类”和“继承”不够直观，学习曲线陡峭
+- **私有成员实现困难**：旧语法难以实现真正的“私有”，须借助闭包模拟
+- **代码可读性低、可维护性差**：原型链操作、函数嵌套多，结构不清晰
 
 ```js
 class MyClass {
@@ -1823,12 +1823,42 @@ class MyClass {
     console.log("This is a static method.");
   }
 }
+
+const myInstance = new MyClass('myPropertyValue');
+myInstance.myMethod(); // 调用实例方法
+MyClass.staticMethod(); // 调用静态方法
 ```
 
-本质上，`class` 的本质仍然是原型链，但其包含以下特点：
+本质上，`class` 的本质仍然是原型链（参考下面的转换示例），但其包含以下特点：
 
 - 类声明不会被提升（必须先声明后使用）
 - 默认处于严格模式
+- 类方法被标记为不可枚举
+- ...
+
+```js
+// 构造函数（相当于 class 的 constructor）
+function MyClass(value) {
+  this.property = value;
+}
+
+// 实例方法（添加到原型上）
+MyClass.prototype.myMethod = function() {
+  console.log(this.property);
+};
+
+// 静态方法（直接添加到构造函数上）
+MyClass.staticMethod = function() {
+  console.log("This is a static method.");
+};
+
+// 使用方式与 class 完全相同
+const myInstance = new MyClass('myPropertyValue');
+myInstance.myMethod(); // 调用实例方法
+MyClass.staticMethod(); // 调用静态方法
+```
+
+更多内容，可参考 [类 - JAVASCRIPT.INFO](https://zh.javascript.info/classes)。
 
 ## 解释一下 JavaScript 中的 `require` 和 `import` 有什么区别？
 
