@@ -154,3 +154,196 @@ title: 设计模式和经验
 ### 10. 逐步改进（Incremental Development）
 - **核心思想**：通过小步快跑、持续迭代的方式开发软件。
 - **实践方式**：敏捷开发、持续集成、持续交付。
+
+## 介绍一下观察者模式 (Observer Pattern) 和发布-订阅模式 (Publish-Subscribe Pattern)。它们各自适用于什么场景？
+
+**观察者模式** 和 **发布-订阅模式** 是两种对象间通信的设计模式，核心区别在于和通信方式。
+
+- **观察者模式**：被观察者直接维护观察者列表，状态变化时同步通知所有观察者。特点是对象间*直接关联*，耦合度较高。应用于 Vue 响应式系统（数据变化触发视图更新）、自定义事件监听（如表单验证）上；
+- **发布-订阅模式**：通过事件总线解耦发布者和订阅者，异步或同步转发事件。应用于跨组件通信（如 Vue/React 的全局事件总线）、DOM 事件（如点击、滚动监听）、状态管理（如 Redux / Vuex）。
+
+观察者模式的示例：
+
+```javascript
+// 主题对象（被观察者）
+class Subject {
+  constructor() {
+    this.observers = [];
+  }
+
+  // 添加观察者
+  addObserver(observer) {
+    this.observers.push(observer);
+  }
+
+  // 移除观察者
+  removeObserver(observer) {
+    this.observers = this.observers.filter(obs => obs !== observer);
+  }
+
+  // 通知所有观察者
+  notify(data) {
+    this.observers.forEach(observer => observer.update(data));
+  }
+}
+
+// 观察者
+class Observer {
+  constructor(name) {
+    this.name = name;
+  }
+
+  update(data) {
+    console.log(`${this.name} 收到通知：${data}`);
+  }
+}
+
+// 使用示例
+const weatherStation = new Subject();
+
+const phoneApp = new Observer('手机天气 App');
+const webApp = new Observer('网页天气应用');
+const tvApp = new Observer('电视天气频道');
+
+// 订阅
+weatherStation.addObserver(phoneApp);
+weatherStation.addObserver(webApp);
+weatherStation.addObserver(tvApp);
+
+// 发布天气更新
+weatherStation.notify('今天晴天，温度 25°C');
+// 输出：
+// 手机天气 App 收到通知：今天晴天，温度 25°C
+// 网页天气应用 收到通知：今天晴天，温度 25°C
+// 电视天气频道 收到通知：今天晴天，温度 25°C
+
+// 取消订阅
+weatherStation.removeObserver(webApp);
+weatherStation.notify('明天下雨，温度 18°C');
+// 输出：
+// 手机天气 App 收到通知：明天下雨，温度 18°C
+// 电视天气频道 收到通知：明天下雨，温度 18°C
+```
+
+发布订阅模式的例子：
+
+```javascript
+// 事件中心（消息代理）
+class EventBus {
+  constructor() {
+    this.events = {};
+  }
+
+  // 订阅事件
+  subscribe(eventName, callback) {
+    if (!this.events[eventName]) {
+      this.events[eventName] = [];
+    }
+    this.events[eventName].push(callback);
+  }
+
+  // 取消订阅
+  unsubscribe(eventName, callback) {
+    if (this.events[eventName]) {
+      this.events[eventName] = this.events[eventName].filter(cb => cb !== callback);
+    }
+  }
+
+  // 发布事件
+  publish(eventName, data) {
+    if (this.events[eventName]) {
+      this.events[eventName].forEach(callback => callback(data));
+    }
+  }
+}
+
+// 发布者
+class NewsPublisher {
+  constructor(eventBus) {
+    this.eventBus = eventBus;
+  }
+
+  publishNews(category, news) {
+    console.log(`发布${category}新闻：${news}`);
+    this.eventBus.publish(category, news);
+  }
+}
+
+// 订阅者
+class NewsSubscriber {
+  constructor(name, eventBus) {
+    this.name = name;
+    this.eventBus = eventBus;
+  }
+
+  subscribeToSports() {
+    this.eventBus.subscribe('sports', (news) => {
+      console.log(`${this.name} 收到体育新闻：${news}`);
+    });
+  }
+
+  subscribeToTech() {
+    this.eventBus.subscribe('tech', (news) => {
+      console.log(`${this.name} 收到科技新闻：${news}`);
+    });
+  }
+}
+
+// 使用示例
+const eventBus = new EventBus();
+
+// 创建发布者
+const newsAgency = new NewsPublisher(eventBus);
+
+// 创建订阅者
+const user1 = new NewsSubscriber('用户 A', eventBus);
+const user2 = new NewsSubscriber('用户 B', eventBus);
+
+// 订阅不同类型的新闻
+user1.subscribeToSports();
+user1.subscribeToTech();
+
+user2.subscribeToSports();
+
+// 发布新闻
+newsAgency.publishNews('sports', '足球世界杯决赛结果出炉！');
+// 输出：
+// 发布 sports 新闻：足球世界杯决赛结果出炉！
+// 用户 A 收到体育新闻：足球世界杯决赛结果出炉！
+// 用户 B 收到体育新闻：足球世界杯决赛结果出炉！
+
+newsAgency.publishNews('tech', '新款 AI 芯片发布！');
+// 输出：
+// 发布 tech 新闻：新款 AI 芯片发布！
+// 用户 A 收到科技新闻：新款 AI 芯片发布！
+
+newsAgency.publishNews('finance', '股市今日大涨！');
+// 输出：
+// 发布 finance 新闻：股市今日大涨！
+// （没有订阅者，所以没有其他输出）
+```
+
+| 特点 | 观察者模式 | 发布订阅模式 |
+|------|------------|--------------|
+| **耦合度** | 观察者和主题直接耦合 | 发布者和订阅者通过事件中心解耦 |
+| **通信方式** | 直接通信 | 间接通信（通过事件中心） |
+| **灵活性** | 相对较低 | 更高，支持更复杂的事件处理 |
+| **适用场景** | 简单的一对多通知 | 复杂的事件驱动系统 |
+
+## 介绍一下事件总线 Event Bus？
+
+事件总线用于在软件系统中实现组件之间的松耦合通信。它提供了一个集中式的事件分发机制，允许不同的模块或组件通过发布和订阅事件来进行交互，而无需直接依赖彼此。这种模式特别适用于解耦复杂系统中的组件，尤其是在事件驱动架构中。
+
+工作原理：
+
+1. **注册订阅者**：订阅者向 Event Bus 注册自己，并指定感兴趣事件的类型。这通常是通过回调函数或方法实现的。
+2. **发布事件**：发布者通过调用 Event Bus 的接口，向总线发送事件。事件的内容可以包括必要的数据。
+3. **分发事件**：Event Bus 接收到事件后，根据事件类型找到所有匹配的订阅者，并将事件分发给他们。
+4. **处理事件**：订阅者接收到事件后，执行与事件相关的逻辑。
+
+优点：松耦合、灵活性、可扩展性、简化复杂系统的通信
+缺点：调试困难、潜在性能问题、难以控制事件流、过度使用造成系统过于依赖事件驱动、降低代码可读性和可控性
+
+## 介绍一下什么是“事件调用”
+
+事件调用就是一种‘订阅-通知’机制。当某个特定事件（比如用户点击了按钮）发生时，事先注册好的处理函数（也就是回调函数）会被自动调用执行。

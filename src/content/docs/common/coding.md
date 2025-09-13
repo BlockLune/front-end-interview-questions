@@ -1003,3 +1003,20 @@ function memoize(fn: Fn): Fn {
   }
 }
 ```
+
+## 使用 JS 操作 DOM，向 `<body>` 中插入一个 `<span>`
+
+```js
+// 1. 查询
+const body = document.querySelector('body');   // 也可用 getElementsByTagName('body')[0]
+
+// 2. 创建节点
+const span = document.createElement('span');
+span.textContent = 'Hello DOM';                // 安全写法，自动转义
+
+// 3. 插入
+body.appendChild(span);                        // 追加到最后
+// body.prepend(span);                         // 最前面（IE 不支持 prepend 需 polyfill）
+```
+
+查询 DOM 节点的更多方法，可以参考：[搜索：`getElement*`，`querySelector*`](https://zh.javascript.info/searching-elements-dom)

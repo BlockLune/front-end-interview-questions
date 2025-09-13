@@ -2,6 +2,252 @@
 title: HTML 和 CSS
 ---
 
+## 介绍一下一般页面布局的 DOM 结构
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>标准页面布局</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="logo">Logo</div>
+    <nav class="nav">
+      <a href="#">首页</a>
+      <a href="#">关于</a>
+      <a href="#">联系</a>
+    </nav>
+  </header>
+
+  <main class="main">
+    <aside class="sidebar">
+      <ul>
+        <li><a href="#">菜单 1</a></li>
+        <li><a href="#">菜单 2</a></li>
+      </ul>
+    </aside>
+
+    <section class="content">
+      <h1>页面标题</h1>
+      <p>这里是主要内容区域。</p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>&copy; 2025 我的公司</p>
+  </footer>
+</body>
+</html>
+```
+
+## 介绍一下 Doctype
+
+Doctype 是一个文档类型声明。它位于 HTML 文档的最顶部，其核心作用是告诉浏览器当前文档应该使用哪种 HTML 或 XHTML 规范来解析和渲染，以确保页面在不同浏览器中都能以一致的方式正确显示。过去，这个声明可以非常复杂，而从 HTML5 开始，只需要使用 `<!DOCTYPE html>` 就行了。
+
+## 介绍一下 `<meta name="viewport" content="width=device-width, initial-scale=1.0">`
+
+这行代码是**移动端 Web 开发的基石**。它通过告诉浏览器‘这个页面是为移动设备优化的，请将视口的宽度设置为设备的理想宽度，并且初始不要缩放’，从而确保网页在手机和平板上能够正确渲染，而不是显示成缩小版的桌面站点。
+
+在早期，移动浏览器（如 iPhone 的 Safari）默认会将视口宽度设置为一个较大的值（如 980px），然后在一个小屏幕上整体渲染一个桌面版页面，导致文字非常小，用户需要手动缩放才能阅读。`width=device-width` 指令**覆盖了这个默认行为**。它命令浏览器：“请将布局视口（layout viewport）的宽度设置为设备独立像素的宽度（比如 iPhone 13 是 390px）”，而不是一个假设的桌面宽度。这样，我们的流体布局和媒体查询就能基于真实的设备宽度来正确工作。
+
+`initial-scale=1.0` 将**初始缩放级别设置为 100%，即不缩放**。它确保了 CSS 像素与设备独立像素的比例为 1:1，使得页面在加载时就能以预期的尺寸和比例呈现。
+
+
+## HTML 文件中如何导入 CSS、JS？
+
+### 一、导入 CSS
+
+1. 外部样式表（最推荐）
+   放在 `<head>` 内，可缓存、可并行加载
+   ```html
+   <!-- 标准写法 -->
+   <link rel="stylesheet" href="css/main.css">
+
+   <!-- 预加载字体或关键 CSS -->
+   <link rel="preload" href="css/critical.css" as="style" onload="this.rel='stylesheet'">
+   ```
+
+2. 内嵌样式表（小量关键样式，避免请求）
+   ```html
+   <style>
+     :root{ --brand:#ff6b6b; }
+     body{ margin:0; font-family:system-ui,sans-serif; }
+   </style>
+   ```
+
+3. 行内样式（仅测试或邮件模板，不推荐生产）
+   ```html
+   <h1 style="color:var(--brand);">Hello</h1>
+   ```
+
+### 二、导入 JavaScript
+
+1. 外部模块脚本（ESM，现代浏览器首选）
+   ```html
+   <!-- 放在 <head> 也无需 defer，type="module" 自动 deferred -->
+   <script type="module" src="js/app.js"></script>
+   ```
+
+2. 外部普通脚本（兼容旧浏览器）
+   ```html
+   <!-- 加 defer 不阻塞 HTML 解析，执行顺序按出现先后 -->
+   <script defer src="js/vendor.js"></script>
+   <script defer src="js/main.js"></script>
+
+   <!-- 无需兼容 IE11 可直接写 <script> 放底部 -->
+   ```
+
+3. 内联脚本（小量配置或性能打点）
+   ```html
+   <script>
+     console.time('page');
+     window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};
+   </script>
+   ```
+
+4. 动态导入（代码分割、按需加载）
+   ```html
+   <script type="module">
+     import('./js/dialog.js').then(m => m.open());
+   </script>
+   ```
+
+### 三、常见坑 & 技巧
+
+- CSS 放 `<head>`，防止“无样式闪烁”（FOUC）。
+- JS 默认阻塞解析；加 `defer` 或 `type="module"` 可解。
+- 同时支持 ESM 与旧浏览器：
+  ```html
+  <script type="module" src="js/app.mjs"></script>
+  <script nomodule src="js/app-legacy.js"></script>
+  ```
+- 跨域资源加 `crossorigin`，错误日志更精准：
+  ```html
+  <link rel="stylesheet" href="https://cdn.example.com/style.css" crossorigin="anonymous">
+  <script src="https://cdn.example.com/lib.js" crossorigin="anonymous"></script>
+  ```
+
+## 什么是 CSS 渲染阻塞？
+
+CSS 渲染阻塞是指**浏览器为了避免给用户展示未经样式修饰的内容（Flash of Unstyled Content, FOUC），而暂停构建渲染树和渲染页面，直到所需的 CSS 文件下载并解析完成的行为**。这会导致页面的首次渲染时间延迟。
+
+浏览器构建页面的关键步骤是：构建 DOM 树 -> 构建 CSSOM 树 -> 将两者合并成渲染树 -> 布局 -> 绘制。CSSOM 的构建是渲染树构建的前提。因为渲染树需要同时包含 DOM 和 CSSOM 的信息来计算每个节点的最终样式。当浏览器在解析 HTML 时遇到一个 `<link rel="stylesheet">` 标签，它会暂停 DOM 树的构建（尽管 DOM 解析可能仍在继续），去下载并解析这个 CSS 文件，并构建 CSSOM 树。只有在 CSSOM 构建完成后，浏览器才会继续构建渲染树并进行后续的布局和绘制操作。这个‘暂停等待’的过程就是所谓的‘渲染阻塞’。
+
+## 如何减少 CSS 渲染阻塞带来的影响？
+
+1. **优化 CSS 资源本身**：
+    - **精简 CSS（Minification）**：移除不必要的空格、注释等，减少文件体积。
+    - **压缩（Gzip/Brotli）**：在服务器端开启压缩，进一步减少传输体积。
+    - **移除未使用的 CSS**：利用 PurgeCSS 等工具删除代码中未使用的样式。
+2. **优化 CSS 的加载方式**：
+    - **将 CSS 放在`<head>`中**：尽早发现并加载 CSS 资源，这是最重要的实践。
+    - **避免使用`@import`**：`@import`会在 CSS 文件中才发起请求，会显著增加阻塞时间。应使用多个`<link>`标签代替。
+    - **使用媒体查询（Media Queries）**：对某些 CSS 资源标记`media`属性，浏览器会优先处理匹配当前环境的 CSS，而将不匹配的（如`media="print"`）标记为低优先级，**从而避免它们阻塞渲染**。
+
+      ```html
+      <link href="style.css" rel="stylesheet">
+      <link href="print.css" rel="stylesheet" media="print"> <!-- 不阻塞渲染 -->
+      <link href="portrait.css" rel="stylesheet" media="orientation:portrait"> <!-- 条件阻塞 -->
+      ```
+
+3. **高级优化**：
+    - **内联关键 CSS（Critical CSS）**：将首屏内容所需的关键样式直接内嵌到 HTML 的`<style>`标签中，这样浏览器就无需等待外部 CSS 文件即可开始渲染首屏，极大地减少阻塞时间。剩余的非关键 CSS 可以异步加载。
+    - **异步加载 CSS**：通过 JavaScript 动态添加`<link>`标签，或使用`preload`等资源提示来更精细地控制加载行为。
+
+## 什么是 FOUC
+
+**FOUC** 是 **Flash of Unstyled Content** 的首字母缩写，中文翻译为 **“无样式内容闪烁”**。
+
+它指的是在网页加载过程中，用户会短暂地看到未经 CSS 样式修饰的原始 HTML 内容（通常是纯文字、链接和按钮，布局混乱），然后页面才突然闪烁一下，应用上正确的样式，恢复正常显示。
+
+这种现象非常影响用户体验，因为它会给人一种页面加载缓慢、不专业或者出了 bug 的感觉。
+
+### 为什么会发生 FOUC？
+
+FOUC 的产生与**浏览器渲染页面的机制**密切相关。其根本原因在于：**CSS 样式表没有在 HTML 内容加载和解析的同时或之前被及时加载和应用**。
+
+具体来说，浏览器的渲染步骤大致如下：
+1.  解析 HTML，构建 DOM（文档对象模型）树。
+2.  解析 CSS，构建 CSSOM（CSS 对象模型）树。
+3.  将 DOM 和 CSSOM 结合，生成渲染树（Render Tree）。
+4.  根据渲染树进行布局（Layout），计算每个节点的位置和大小。
+5.  将布局后的节点绘制（Paint）到屏幕上。
+
+FOUC 就发生在第 2 步和第 5 步之间。如果 CSS 加载被阻塞或延迟，浏览器会先显示原始的 HTML（步骤 1），等 CSS 终于加载完成后，再重新计算样式、布局并绘制，这就导致了内容的“闪烁”。
+
+#### 常见的具体原因包括：
+
+1.  **使用 `@import` 引入 CSS**：`@import` 规则引入的样式表只有在宿主 CSS 文件被下载和解析后才会被发现和加载，这显著延迟了样式应用的时机。
+2.  **将 CSS 放在文档底部**：按照 HTML 的解析顺序，如果 `<link>` 标签被放在 `<body>` 的末尾而不是 `<head>` 中，浏览器会先渲染所有已解析的 HTML，最后才看到并加载 CSS。
+3.  **JavaScript 阻塞渲染**：浏览器在解析到 `<script>` 标签时会暂停 HTML 的解析（除非标记为 `async` 或 `defer`），先去下载和执行 JavaScript。如果 JavaScript 试图操作尚未加载的样式，或者只是阻塞了 DOM 构建，也会导致渲染延迟。
+4.  **旧版本 IE 的特定行为**：Internet Explorer（特别是 IE6/7/8 等旧版本）有一个特殊的行为：如果页面中的某个脚本试图访问某些尚未被加载的元素的样式属性，IE 会先渲染整个页面以确保脚本能获取到正确的值，等所有资源加载完后再重新渲染。这个机制是导致 IE 下 FOUC 的一个著名原因。
+
+### 如何避免和修复 FOUC？
+
+解决 FOUC 的核心思路就是：**确保 CSS 尽可能早地被加载和解析**。
+
+以下是几种有效的方法：
+
+1.  **将 CSS `<link>` 标签放在 `<head>` 中**
+    这是最简单也是最重要的方法。让浏览器在解析 HTML 内容 body 之前就先发现并开始加载 CSS。
+
+2.  **避免使用 `@import`**
+    使用 `<link>` 标签来链接外部样式表，而不是在 CSS 文件中使用 `@import`。因为 `<link>` 是并行加载的，而 `@import` 是串行的，会拖慢整体加载速度。
+
+3.  **使用 `media` 属性**
+    对于非首屏关键 CSS（如打印样式），可以给 `<link>` 标签加上 `media="print"` 等属性。浏览器会以低优先级加载这些样式表，从而避免阻塞关键渲染路径。
+
+4.  **内联关键 CSS (Critical CSS)**
+    将首屏内容所必需的关键 CSS 代码直接内嵌到 `<head>` 的 `<style>` 标签中。这样可以确保浏览器无需等待外部 CSS 文件下载，就能立即渲染出带有基本样式的首屏内容。非关键 CSS 可以异步加载。
+
+5.  **用 JavaScript 动态加载 CSS 时隐藏内容**
+    在一些特殊情况下（如使用 JavaScript 框架），如果必须异步加载 CSS，可以在加载完成前先使用 JavaScript 将 body 隐藏（例如 `<body style="visibility: hidden;">`），等 CSS 加载完毕后再显示出来。但这种方法要谨慎使用，如果 JavaScript 执行失败，页面可能永远无法显示。
+
+## 介绍一下在 HTML 中导入 JS 时，async 和 defer 的作用
+
+- **默认（无 `async` 和 `defer`）**：阻塞 DOM 的构建，接受完成后就执行（所以要把 `<script>` 到 `<body>` 的末尾，即紧挨着 `</body>` 之前，而不是 `<head>` 中）
+- **`async`** ：不阻塞，接受完成就执行（不管文件中的书写顺序），一般独立的脚本就用这个（例如 Google Analysis）
+- **`defer`**：不阻塞，确保 DOM 已经加载之后再执行，尊重文件中的声明顺序
+
+## 介绍一下常用的 HTML 元素
+
+- **块级元素**（默认独占一行）
+  - `div` —— 通用盒子
+  - `p` —— 段落
+  - `h1...h6` —— 标题
+  - `ul / ol / li` —— 列表
+  - `section / header / footer` —— 语义区段
+
+- **行内元素**（默认同行排列）
+  - `span` —— 通用小段
+  - `a` —— 链接
+  - `img` —— 图片
+  - `strong / em` —— 加粗/强调
+  - `input / label` —— 表单控件
+
+可参考：
+
+- [行级内容 - MDN](https://developer.mozilla.org/zh-CN/docs/Glossary/Inline-level_content)
+- [块级内容 - MDN](https://developer.mozilla.org/zh-CN/docs/Glossary/Block-level_content)
+
+## 介绍一下 BFC、IFC、GFC、FFC
+
+- **BFC（Block Formatting Context，块格式化上下文）** 是一个独立的布局环境，块级元素（如 `div`）在其中垂直排列，独占一行。通过 `overflow: hidden`、`float` 或 `display: flow-root` 等方式触发（注意 `display` 的默认值是 `block`，但并不足以触发 BFC），能*包裹浮动元素*、*阻止外边距合并*，常用于解决父元素高度塌陷问题。
+- **IFC（Inline Formatting Context，内联格式化上下文）** 负责**内联元素**（如文本、`span`）的水平排列和换行，默认由块级容器生成。它控制文本对齐（如 `vertical-align`）、行高和换行逻辑，适合图文混排场景。
+- **GFC（Grid Formatting Context，网格格式化上下文）** 通过 `display: grid` 触发，提供*二维网格布局*能力，可定义行列结构（如 `grid-template-columns`），适合复杂的响应式页面设计，例如仪表盘布局。
+- **FFC（Flex Formatting Context，弹性格式化上下文）** 通过 `display: flex` 触发，以*一维弹性布局*为核心，支持子元素的灵活伸缩（`flex-grow`）和对齐（`justify-content`），常用于导航栏、按钮组等需要动态分配空间的场景。
+
+## 父元素高度坍塌问题是什么？解决方案有哪些？
+
+在 **子元素浮动或绝对定位** 时，父元素无法正确计算自身高度，表现为高度变为 0，即“消失”或“坍塌”。解决方案是触发**BFC（块格式化上下文）**，使父元素重新计算高度。常用方法有：
+
+- 设置 `overflow: hidden` 或 `overflow: auto`：触发 BFC，包裹浮动元素，但可能隐藏溢出内容。
+- 使用 `display: flow-root`：触发 BFC，包裹浮动元素，兼容性较好。
+
 ## 介绍一下 CSS “盒模型”
 
 **盒模型（Box Model）**：在网页布局中，每一个元素（无论是块级元素还是内联元素）都可以被看作是一个矩形的“盒子”。这个盒子由内到外依次由四个部分构成：
@@ -24,19 +270,10 @@ title: HTML 和 CSS
 }
 ```
 
-## 介绍一下 BFC、IFC、GFC、FFC
+## `margin-top` 和 `top` 的区别是什么？
 
-- **BFC（Block Formatting Context，块格式化上下文）** 是一个独立的布局环境，块级元素（如 `div`）在其中垂直排列，独占一行。通过 `overflow: hidden`、`float` 或 `display: flow-root` 等方式触发（注意 `display` 的默认值是 `block`，但并不足以触发 BFC），能*包裹浮动元素*、*阻止外边距合并*，常用于解决父元素高度塌陷问题。
-- **IFC（Inline Formatting Context，内联格式化上下文）** 负责**内联元素**（如文本、`span`）的水平排列和换行，默认由块级容器生成。它控制文本对齐（如 `vertical-align`）、行高和换行逻辑，适合图文混排场景。
-- **GFC（Grid Formatting Context，网格格式化上下文）** 通过 `display: grid` 触发，提供*二维网格布局*能力，可定义行列结构（如 `grid-template-columns`），适合复杂的响应式页面设计，例如仪表盘布局。
-- **FFC（Flex Formatting Context，弹性格式化上下文）** 通过 `display: flex` 触发，以*一维弹性布局*为核心，支持子元素的灵活伸缩（`flex-grow`）和对齐（`justify-content`），常用于导航栏、按钮组等需要动态分配空间的场景。
-
-## 父元素高度坍塌问题是什么？解决方案有哪些？
-
-在 **子元素浮动或绝对定位** 时，父元素无法正确计算自身高度，表现为高度变为 0，即“消失”或“坍塌”。解决方案是触发**BFC（块格式化上下文）**，使父元素重新计算高度。常用方法有：
-
-- 设置 `overflow: hidden` 或 `overflow: auto`：触发 BFC，包裹浮动元素，但可能隐藏溢出内容。
-- 使用 `display: flow-root`：触发 BFC，包裹浮动元素，兼容性较好。
+- `margin-top`：推走它下面的元素。
+- `top`：移动它自己（通常需要 position 非 static）。
 
 ## 怎么让一个元素水平、垂直居中？
 
@@ -56,21 +293,40 @@ title: HTML 和 CSS
 - `absolute`：元素脱离正常的文档流，不再占据原本的空间。元素的位置相对于最近的非 static（通常是 relative, absolute, fixed 或 sticky）定位的祖先元素进行定位。如果找不到这样的祖先元素，则相对于初始包含块（通常是 `<html>` 或 `<body>` 标签） 进行定位。top, right, bottom, left 属性决定了元素相对于这个参照物的最终位置。
 - `fixed`：元素脱离正常的文档流。元素的位置相对于浏览器视口（viewport） 进行定位。这意味着它不会随着页面滚动而移动。top, right, bottom, left 属性决定了它在视口中的位置。
 
-## 介绍一下 inset
+## 介绍一下 `inset`
 
-inset 是 CSS 逻辑属性，是 top, right, bottom, left 四个属性的简写。它的语法与 margin 和 padding 的简写方式完全一致。
+`inset` 是 CSS 逻辑属性，是 `top`, `right`, `bottom`, `left` 四个属性的简写。它的语法与 `margin` 和 `padding` 的简写方式完全一致。
 
-- inset: 0; → top: 0; right: 0; bottom: 0; left: 0;
-- inset: 10px 20px; → top: 10px; right: 20px; bottom: 10px; left: 20px;
-- inset: 10px 20px 30px; → top: 10px; right: 20px; bottom: 30px; left: 20px;
-- inset: 10px 20px 30px 40px; → top: 10px; right: 20px; bottom: 30px; left: 40px;
-
-## `margin-top` 和 `top` 的区别是什么？
-
-- margin-top：推走它下面的元素。
-- top：移动它自己（通常需要 position 非 static）。
+- `inset: 0;` → `top: 0; right: 0; bottom: 0; left: 0;`
+- `inset: 10px 20px;` → `top: 10px; right: 20px; bottom: 10px; left: 20px;`
+- `inset: 10px 20px 30px;` → `top: 10px; right: 20px; bottom: 30px; left: 20px;`
+- `inset: 10px 20px 30px 40px;` → `top: 10px; right: 20px; bottom: 30px; left: 40px;`
 
 ## 介绍一下各种 `display`
+
+- Outside Display（外部显示类型）
+  - `block`: 块级元素，独占一行，宽度默认撑满父容器，例如 `<div>`、`<p>`、`<h1>`
+  - `inline`: 行内元素，不换行，宽高无效，margin/padding 仅左右有效，例如 `<span>`、`<a>`、`<strong>`
+  - `inline-block`: 行内块，既在一行内，又可设置宽高，例如自定义按钮、图标
+  - `none`: 元素从文档中移除，不占空间，例如隐藏元素
+
+- Inside Display（内部显示类型）
+  - `flex`: 弹性布局，子元素成为 flex item，支持主轴、交叉轴对齐
+  - `grid`: 网格布局，子元素成为 grid item，支持二维布局
+  - `table`: 表格布局，模拟 `<table>` 行为，语义差，少用
+  - `flow`: 默认文档流布局，就是普通块级/行内布局
+  - `flow-root`: 创建 BFC（块级格式化上下文），清除浮动、防止 margin 合并
+
+- 列表相关
+  - `list-item`: 像 `<li>` 一样，生成主块和标记框，可用于自定义列表样式
+
+- 实验性或少用
+  - `contents`: 元素本身不生成盒子，子元素照常渲染，用于语义包装，不影响布局
+  - `ruby`: 用于注音文本（如中文拼音、日文假名），极少用
+
+- 双值语法（CSS Display Level 3）
+  - `block flex`: 外部是块级，内部是 flex
+  - `inline grid`: 外部是行内，内部是 grid
 
 ## `opacity`、`visibility`、`display` 的区别是什么？
 
@@ -98,17 +354,36 @@ inset 是 CSS 逻辑属性，是 top, right, bottom, left 四个属性的简写�
 | **`visibility`** | `hidden` | ❌   | ✅    | ❌    | 🟡 有限支持 | 🟡 可被子元素覆盖 | 🟡 重绘    | 临时隐藏、保留布局   |
 | **`display`**    | `none`   | ❌   | ❌    | ❌    | ❌       | ❌ 元素被移除    | 🔴 重排+重绘 | 条件渲染、性能优化   |
 
-## 重排和重绘分别是什么？有什么区别？针对各种 CSS 属性的变化说一说
+## 介绍一下 CSS 中的各种长度单位
 
-**重排**发生在元素的几何属性（如尺寸、位置）发生变化时，例如修改 `width`、`height`、`margin` 或 `position` 等属性，或者修改 `font-size`、`font-family` 导致几何尺寸变化时，浏览器需要重新计算布局，确定所有元素的位置和大小，这一过程计算成本较高，可能波及整个页面布局。
+- 绝对单位（不随屏幕或字体变化）
+  - `px`：像素，最常用的固定单位，精确但缺乏弹性。
+  - `pt`：点，1 pt = 1/72 in，印刷场景常用，浏览器中 16 px ≈ 12 pt。
+  - `pc`：派卡，1 pc = 12 pt，印刷排版单位，网页很少用。
+  - `in`：英寸，1 in = 96 px，仅用于打印样式表。
+  - `cm` / `mm`：厘米 / 毫米，1 cm = 37.8 px，打印样式表可见。
 
-而**重绘**则是元素外观（如颜色、背景）改变但不影响布局时触发的像素重新绘制，例如调整 `color`、`background-color`、`outline` 或 `box-shadow`，虽然成本低于重排，但仍需避免频繁触发。两者的核心区别在于：**重排必然导致后续重绘**，而重绘不一定伴随重排。
+- 字体相对单位（以当前元素或祖先元素的 font-size 为基准）
+  - `em`：相对于**自身**或**父元素**的 font-size，可嵌套累积，需谨慎。
+  - `rem`：相对于**根元素**（html）的 font-size，避免嵌套副作用，响应式首选。
+  - `ex`：相对于当前字体 x 高度（小写字母 x 的高度），排版微调时偶尔用。
+  - `ch`：相对于当前字体数字 0 的宽度，等宽字体布局时实用（如设定 80 字符换行）。
 
-此外，修改 `opacity` 或 `transform` 时，若元素处于独立图层（如通过 `will-change` 优化），浏览器会跳过重排重绘，直接通过 **合成（Composite）** 操作完成，这类属性（如 `transform`、`opacity`）因 GPU 加速成为性能优化的首选。
+- 视口相对单位（随窗口大小变化，天生响应式）
+  - `vw`：视口宽度的 1 %，100 vw = 可视区全宽。
+  - `vh`：视口高度的 1 %，100 vh = 可视区全高。
+  - `vmin`：vw 与 vh 中**较小**值的 1 %，适用于“正方形随屏适配”。
+  - `vmax`：vw 与 vh 中**较大**值的 1 %，用于全屏遮罩或背景。
 
-## 介绍一下 Doctype
+- 容器相对单位（容器查询时代的新单位，需支持 CQ 的浏览器）
+  - `cqw` / `cqh`：容器宽度 / 高度的 1 %。
+  - `cqi` / `cqb`：容器内联 / 块方向的 1 %，自动跟随书写模式。
+  - `cqmin` / `cqmax`：上述最小或最大值，类似 vmin/vmax，但基于容器。
 
-Doctype 是一个文档类型声明。它位于 HTML 文档的最顶部，其核心作用是告诉浏览器当前文档应该使用哪种 HTML 或 XHTML 规范来解析和渲染，以确保页面在不同浏览器中都能以一致的方式正确显示。过去，这个声明可以非常复杂，而从 HTML5 开始，只需要使用 `<!DOCTYPE html>` 就行了。
+- 角度/时间/分辨率单位（专用场景，非长度，但常一起出现）
+  - `deg` / `rad` / `grad` / `turn`：角度，用于 transform、渐变。
+  - `s` / `ms`：秒 / 毫秒，用于 transition/animation 时间。
+  - `dpi` / `dpcm` / `dppx`：分辨率，用于媒体查询 Retina 屏。
 
 ## 如何实现响应式布局？
 
@@ -149,41 +424,6 @@ Doctype 是一个文档类型声明。它位于 HTML 文档的最顶部，其核
 - **测试**：我使用 Chrome DevTools 的设备模拟器进行主要断点的测试，并在真实的手机和平板设备上进行最终验证。
 
 **总结来说，** 我的响应式策略不是单一技术，而是一个组合拳：**用流体网格和弹性媒体实现平滑缩放，用媒体查询在关键点进行布局重构，并用 Flexbox 和 Grid 等现代布局技术作为实现的强大工具。**
-
-## 具体介绍一下 `<meta name="viewport" content="width=device-width, initial-scale=1.0">`
-
-这行代码是**移动端 Web 开发的基石**。它通过告诉浏览器‘这个页面是为移动设备优化的，请将视口的宽度设置为设备的理想宽度，并且初始不要缩放’，从而确保网页在手机和平板上能够正确渲染，而不是显示成缩小版的桌面站点。
-
-在早期，移动浏览器（如 iPhone 的 Safari）默认会将视口宽度设置为一个较大的值（如 980px），然后在一个小屏幕上整体渲染一个桌面版页面，导致文字非常小，用户需要手动缩放才能阅读。`width=device-width` 指令**覆盖了这个默认行为**。它命令浏览器：“请将布局视口（layout viewport）的宽度设置为设备独立像素的宽度（比如 iPhone 13 是 390px）”，而不是一个假设的桌面宽度。这样，我们的流体布局和媒体查询就能基于真实的设备宽度来正确工作。
-
-`initial-scale=1.0` 将**初始缩放级别设置为 100%，即不缩放**。它确保了 CSS 像素与设备独立像素的比例为 1:1，使得页面在加载时就能以预期的尺寸和比例呈现。
-
-## 什么是 CSS 渲染阻塞？
-
-CSS 渲染阻塞是指**浏览器为了避免给用户展示未经样式修饰的内容（Flash of Unstyled Content, FOUC），而暂停构建渲染树和渲染页面，直到所需的 CSS 文件下载并解析完成的行为**。这会导致页面的首次渲染时间延迟。
-
-浏览器构建页面的关键步骤是：构建 DOM 树 -> 构建 CSSOM 树 -> 将两者合并成渲染树 -> 布局 -> 绘制。CSSOM 的构建是渲染树构建的前提。因为渲染树需要同时包含 DOM 和 CSSOM 的信息来计算每个节点的最终样式。当浏览器在解析 HTML 时遇到一个 `<link rel="stylesheet">` 标签，它会暂停 DOM 树的构建（尽管 DOM 解析可能仍在继续），去下载并解析这个 CSS 文件，并构建 CSSOM 树。只有在 CSSOM 构建完成后，浏览器才会继续构建渲染树并进行后续的布局和绘制操作。这个‘暂停等待’的过程就是所谓的‘渲染阻塞’。
-
-## 如何减少 CSS 渲染阻塞带来的影响？
-
-1. **优化 CSS 资源本身**：
-    - **精简 CSS（Minification）**：移除不必要的空格、注释等，减少文件体积。
-    - **压缩（Gzip/Brotli）**：在服务器端开启压缩，进一步减少传输体积。
-    - **移除未使用的 CSS**：利用 PurgeCSS 等工具删除代码中未使用的样式。
-2. **优化 CSS 的加载方式**：
-    - **将 CSS 放在`<head>`中**：尽早发现并加载 CSS 资源，这是最重要的实践。
-    - **避免使用`@import`**：`@import`会在 CSS 文件中才发起请求，会显著增加阻塞时间。应使用多个`<link>`标签代替。
-    - **使用媒体查询（Media Queries）**：对某些 CSS 资源标记`media`属性，浏览器会优先处理匹配当前环境的 CSS，而将不匹配的（如`media="print"`）标记为低优先级，**从而避免它们阻塞渲染**。
-
-        ```html
-        <link href="style.css" rel="stylesheet">
-        <link href="print.css" rel="stylesheet" media="print"> <!-- 不阻塞渲染 -->
-        <link href="portrait.css" rel="stylesheet" media="orientation:portrait"> <!-- 条件阻塞 -->
-        ```
-
-3. **高级优化**：
-    - **内联关键 CSS（Critical CSS）**：将首屏内容所需的关键样式直接内嵌到 HTML 的`<style>`标签中，这样浏览器就无需等待外部 CSS 文件即可开始渲染首屏，极大地减少阻塞时间。剩余的非关键 CSS 可以异步加载。
-    - **异步加载 CSS**：通过 JavaScript 动态添加`<link>`标签，或使用`preload`等资源提示来更精细地控制加载行为。
 
 ## 请解释什么是 CSS 动画，以及两种主要的实现方式？
 

@@ -330,16 +330,33 @@ AST 是 **抽象语法树（Abstract Syntax Tree）** 的缩写，是源代码�
 *   **塔中**: **浏览器缓存（特别是 Cache API）**，为应用提供离线能力和对网络请求的精细控制。
 *   **塔尖（最精细）**: **应用层缓存**，针对具体业务逻辑和数据状态，进行去重、记忆化等微操，提升应用运行时的流畅度。
 
-## 介绍一下浏览器渲染过程
+## 介绍一下从输入 URL 到页面最终可交互的过程中，具体发生了什么
 
-1. 构建 DOM 树：将 HTML 文本内容 parse 为 DOM
-2. 构建 CSSOM 树：将 CSS 文本内容 parse 为 CSSOM（与 DOM 并行，但会阻塞 render tree 的生成，因为样式必须全量）
-3. 合并生成 Render Tree（Attachment）: DOM 节点 + 对应计算后样式 → 只包含可见节点（`display:none` 的不会进入）
-4. Layout（Reflow）: 根据 Render Tree 计算每个节点的几何信息，例如位置、尺寸等
-5. Layerize（分层）: 浏览器把页面拆成多个合成层（compositor layers）
-6. Paint（绘制）: 把每个层拆成绘制指令（draw calls），记录为显示列表
-7. Raster（光栅化）: 合成线程把指令转交给 GPU 进程，在 GPU 或 CPU 上把矢量指令变成位图
-8. Composite（合成）: GPU 把各层位图按正确顺序（z-index、transform）合成为最终帧，送到显示器。
+1. **用户输入 URL 并解析**：用户在浏览器地址栏输入 URL，浏览器会解析这个 URL，判断是合法的 URL 还是搜索词。如果是搜索词，会使用默认搜索引擎进行搜索。
+2. **DNS 查询**：浏览器缓存 -> 系统缓存 -> 路由器缓存 -> ISP DNS 缓存 -> 根域名服务器。浏览器会依次查找各级缓存，直到找到域名对应的 IP 地址。
+3. **建立 TCP 连接**：浏览器与服务器通过三次握手建立 TCP 连接。
+4. **发送 HTTP 请求**：浏览器向服务器发送 HTTP 请求，请求获取页面资源。
+5. **服务器处理请求并返回响应**：服务器接收到请求后，会处理请求并返回 HTTP 响应，响应中包含了页面的 HTML 内容。
+6. **浏览器接收并解析响应**：浏览器接收到服务器的响应后，会开始解析 HTML 文档。
+7. **渲染过程**：
+   - **构建 DOM 树**：将 HTML 文本内容 parse 为 DOM。
+   - **构建 CSSOM 树**：将 CSS 文本内容 parse 为 CSSOM（与 DOM 并行，但会阻塞 render tree 的生成，因为样式必须全量）。
+   - **合并生成 Render Tree（Attachment）**: DOM 节点 + 对应计算后样式 → 只包含可见节点（display:none 的不会进入）。
+   - **Layout（Reflow）**: 根据 Render Tree 计算每个节点的几何信息，例如位置、尺寸等。
+   - **Layerize（分层）**: 浏览器把页面拆成多个合成层（compositor layers）。
+   - **Paint（绘制）**: 把每个层拆成绘制指令（draw calls），记录为显示列表。
+   - **Raster（光栅化）**: 合成线程把指令转交给 GPU 进程，在 GPU 或 CPU 上把矢量指令变成位图。
+   - **Composite（合成）**: GPU 把各层位图按正确顺序（z-index、transform）合成为最终帧，送到显示器。
+8. **JavaScript 执行**：在解析 HTML 的过程中，如果遇到 `<script>` 标签，会阻塞 DOM 的解析，先执行 JavaScript 代码。JavaScript 可能会修改 DOM 和 CSSOM。
+9. **页面可交互**：当 DOM 解析完成，并且所有延迟执行的脚本执行完毕后，页面进入可交互状态。
+
+## 重排和重绘分别是什么？有什么区别？针对各种 CSS 属性的变化说一说
+
+**重排（Reflow）**发生在元素的几何属性（如尺寸、位置）发生变化时，例如修改 `width`、`height`、`margin` 或 `position` 等属性，或者修改 `font-size`、`font-family` 导致几何尺寸变化时，浏览器需要重新计算布局，确定所有元素的位置和大小，这一过程计算成本较高，可能波及整个页面布局。
+
+而**重绘（Paint）**则是元素外观（如颜色、背景）改变但不影响布局时触发的像素重新绘制，例如调整 `color`、`background-color`、`outline` 或 `box-shadow`，虽然成本低于重排，但仍需避免频繁触发。两者的核心区别在于：**重排必然导致后续重绘**，而重绘不一定伴随重排。
+
+此外，修改 `opacity` 或 `transform` 时，若元素处于独立图层（如通过 `will-change` 优化），浏览器会跳过重排重绘，直接通过 **合成（Composite）** 操作完成，这类属性（如 `transform`、`opacity`）因 GPU 加速成为性能优化的首选。
 
 ## 介绍一下 Cookie 和 Session
 
@@ -423,8 +440,25 @@ Mojo 的底层机制在不同系统上有所差异，例如 Windows 上使用管
 - 内存安全性
 - 社区繁荣
 
-## 介绍一下什么是 Blob？
+## 介绍一下什么是 Blob
 
 Blob 是一种在浏览器中表示二进制数据的对象，全称是 Binary Large Object （二进制大对象）。它常用于处理文件、图片、视频等非文本数据。简单来说，Blob 是一段原始的二进制数据，可以用来存储任意类型的数据，并且支持以文件的形式操作这些数据。
 
 Blob 表示的是不可变的、原始的二进制数据。它的内容可以是任何形式的文件（如图片、音频、视频、PDF 等），或者只是普通的字节流。每个 Blob 对象都有一个 MIME 类型（如 image/jpeg、application/pdf），用于描述数据的格式。Blob 的内容是只读的，不能直接修改。如果需要修改，可以通过切片（slice 方法）创建新的 Blob。
+
+## 介绍一下什么是 Web Worker
+
+Web Worker 是一种浏览器提供的技术，允许我们在 JavaScript 中创建一个独立的线程来运行脚本，从而避免阻塞主线程（通常是 UI 线程）。它的核心作用是解决耗时任务（如大量计算、数据处理、图片压缩等）对页面性能的影响，让页面保持流畅和响应。
+
+```js
+// 主线程代码
+const worker = new Worker('worker.js');
+
+// 向 Worker 发送消息
+worker.postMessage({ action: 'compress', data: largeImageData });
+
+// 接收 Worker 返回的消息
+worker.onmessage = (event) => {
+  console.log('收到 Worker 的结果：', event.data);
+};
+```
