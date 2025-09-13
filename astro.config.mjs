@@ -1,9 +1,13 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import { remarkAlert } from 'remark-github-blockquote-alert';
 
 // https://astro.build/config
 export default defineConfig({
+  markdown: {
+    remarkPlugins: [remarkAlert],
+  },
 	integrations: [
 		starlight({
 			title: 'Front End Interview Questions',
@@ -14,6 +18,9 @@ export default defineConfig({
 					autogenerate: { directory: 'common' },
 				},
 			],
+      customCss: [
+        './src/styles/global.css'
+      ]
 		}),
 	],
 });

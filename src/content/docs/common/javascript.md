@@ -31,7 +31,7 @@ typeof new Date();    // "object"
 typeof function() {}; // "function" - 特殊
 ```
 
-> [!info]
+> [!note]
 > 为什么 `typeof null` 的结果是 `"object"`？
 > 这是一个历史遗留 Bug。JS 早期实现中，`null` 的底层表示是 NULL 指针（0x00），而对象的类型标签恰好也是 0，所以 `typeof` 就将其误认为了对象
 
@@ -461,7 +461,7 @@ console.log(greetLisiWithHello('很高兴认识你！'));
 - `Object.seal`：密封对象，使对象不可扩展、不可删除属性，但可以修改属性值。
 - `Object.preventExtensions`：阻止对象扩展，使对象不可扩展，但可以删除和修改属性值。
 
-> [!info]
+> [!note]
 > 扩展，指的是向对象添加新属性。
 
 ## 介绍一下对象属性的特性
@@ -1485,7 +1485,7 @@ worker.onmessage = (event) => {
 
 `var` 在全局作用域声明的变量会挂载到全局对象（如浏览器的 `window`）上，而 `let` 和 `const` 不会。此外，`var` 的函数作用域特性可能导致一些难以调试的问题（比如闭包中的循环变量问题）。
 
-> [!info]
+> [!note]
 > 暂时性死区：从作用域 `{` 开始，到变量声明 `let`/`const` 结束，在此区域内访问变量会抛出 `ReferenceError`
 
 ## 普通对象和 `Map` 的区别是什么？`Map` 和 `WeakMap` 的区别是什么？
