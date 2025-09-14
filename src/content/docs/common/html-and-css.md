@@ -672,3 +672,19 @@ CSS Transition（过渡）是一组用于控制简单动画效果的属性，它
 ```
 
 在线演示：[Tailwind Play](https://play.tailwindcss.com/TwAUEpZdKz)
+
+## 介绍一下 CSS 的 `contain` 属性
+
+CSS 的 `contain` 属性告诉浏览器：这个元素内部的子树（subtree）在将来几乎不会对外部产生副作用，因此你可以为它建立独立的布局/绘制/尺寸计算等“隔离区”，从而跳过大量整文档重排、重绘、样式继承检查，达到提速、省电、少掉帧的目的。
+
+```css
+contain: none | strict | content | [ layout || style || paint || size ]
+```
+
+- `none`（默认）：不做任何限制
+- `layout`：内部布局不影响外部，反之亦然（contain: layout）
+- `paint`：子元素若溢出容器可视盒将被裁剪，浏览器可跳过容器外绘制（contain: paint）
+- `size`：容器的尺寸计算不再依赖子元素内容；你必须显式给宽/高，否则 0×0（contain: size）
+- `style`： counters / quotes 等某些“样式副作用”不会穿越该容器（contain: style）
+- `content` = layout + paint
+- `strict` = layout + paint + size （最“封闭”也最常用）

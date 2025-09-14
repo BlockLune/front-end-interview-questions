@@ -2,6 +2,94 @@
 title: 场景题
 ---
 
+## 如何优化一个长列表的渲染性能？
+
+长列表的性能瓶颈：
+
+- **DOM 节点过多**：浏览器需要创建和维护大量 DOM 元素，内存占用显著增加，布局计算（Layout）和绘制（Paint）负担加重
+- **React 协调成本**：`render` 函数执行时间变长；Diff 算法在大量节点间比较，效率降低；频繁地更新可能导致掉帧，用户体验差
+
+解决方案：
+
+- **虚拟列表** 技术：
+  - 核心思想：只渲染视口（Viewport）内可见的列表项
+  - 按需渲染：当用户滚动列表时，动态计算并渲染新的可见项，移除已经移出视口的列表项
+  - 视觉欺骗：通过精确计算和占位，让用户感觉整个列表都已经加载，但实际上 DOM 中只存在少量元素
+  - 现有三方库：react-window、react-virtualized 等
+- 分页 + Intersection Observer 自动加载：
+  - 依旧创建 DOM，但数量可控；配合骨架屏体验不差
+- 回收池（DOM Recycling）
+  - 只创建 2 倍视口节点，滚动时把顶部节点移到尾部并重填数据，Instagram Web 早期方案
+- CSS `contain: strict`
+  - 告诉浏览器这个区域布局/绘制/样式都不影响外部，能省 30%+ 重排时间
+- `will-change: transform` + GUP 层
+  - 把每行提升为独立层，滚动只触发合成器，不触发主线程重绘；但层太多会爆显存，需权衡
+
+## 假设现在有一个计算量非常大的任务，比如需要连续计算一分钟，直接把它放在主线程上执行会有什么问题？可以如何解决？
+
+将重任务直接放在主线程上运行，会导致：
+
+- **UI/交互冻结**：主线程负责 UI 渲染和用户交互，长时间占用会导致界面卡死，用户无法进行任何操作
+- **响应超时**：浏览器/系统可能判定进程无响应（如 Chrome 的"页面无响应"弹窗）
+- **队列阻塞**：主线程任务队列中的其他任务（如定时器、事件回调）无法执行，导致逻辑中断
+- **资源浪费**：单线程无法充分利用多核 CPU，计算效率低下
+
+可以通过**任务切片**避免连续占用主线程，或将计算任务从主线程**转移**到其他线程/进程来解决这个问题：
+
+### 任务切片（Time Slicing）
+
+将大任务拆分为小任务（如每次执行 5ms），通过 `setTimeout` 或 `requestIdleCallback` 让出主线程控制权。
+
+```javascript
+function heavyTask(totalDuration) {
+  const startTime = Date.now();
+  const CHUNK_DURATION = 5; // 每片执行 5ms
+
+  function processChunk() {
+    const chunkStart = Date.now();
+    while (Date.now() - chunkStart < CHUNK_DURATION && Date.now() - startTime < totalDuration) {
+      // 执行部分计算逻辑（如累加一个子步骤）
+    }
+    if (Date.now() - startTime < totalDuration) {
+      setTimeout(processChunk, 0); // 让出主线程，继续下一片
+    } else {
+      console.log('计算完成');
+    }
+  }
+  processChunk();
+}
+```
+
+- **优点**：无需额外线程，兼容所有环境。
+- **缺点**：总计算时间延长，无法利用多核。
+
+### Web Workers（浏览器环境）
+
+创建独立的后台线程（Web Worker）执行计算，通过消息传递与主线程通信。
+
+```javascript
+// main.js（主线程）
+const worker = new Worker('calculator.js');
+worker.postMessage({ type: 'START_CALCULATION', duration: 60000 });
+
+worker.onmessage = (e) => {
+  if (e.data.type === 'RESULT') {
+    console.log('计算结果：', e.data.result);
+  }
+};
+
+// calculator.js（Worker 线程）
+self.onmessage = (e) => {
+  if (e.data.type === 'START_CALCULATION') {
+    const result = performHeavyCalculation(e.data.duration); // 耗时计算函数
+    self.postMessage({ type: 'RESULT', result });
+  }
+};
+```
+
+- **优点**：完全释放主线程，支持多核并行计算。
+- **缺点**：无法直接操作 DOM，通信数据需序列化（结构化克隆算法）。
+
 ## 如果让你设计一个前端告警系统，你会如何设计？
 
 核心目标：**实时监测** 前端应用的运行状态，**及时捕获** 异常情况，并通过合适的方式 **通知** 相关人员，以便快速响应和解决问题。
@@ -179,22 +267,91 @@ title: 场景题
 
 这样的主题切换功能设计既考虑了基本功能的实现，又提供了丰富的扩展性和良好的用户体验，能够满足大多数 Web 应用的主题切换需求。
 
+## 在小程序中，当你要将一个业务组件抽象为通用模块时，你的设计思路是怎样的？
+
+将业务组件抽象为通用模块，核心在于 **识别并剥离"共性"与"个性"**。我的设计思路深受 Radix UI 等优秀 Headless UI 库的启发，旨在创建一个"高内聚、低耦合"的内核，同时将最大程度的灵活性交还给业务。
+
+具体而言，我会遵循以下原则来界定通用逻辑和业务逻辑的边界：
+
+1. **通用逻辑（组件内核）**：
+   - **结构（Structure）**：组件最基础的、不变的骨架。例如，一个 Tabs 组件，其核心结构就是 `Tabs > TabList > TabTrigger + TabContent` 的嵌套关系。我会将这层结构固化在组件内部，例如在小程序中，可以通过 `relations` 和 `slot` 机制来定义和暴露。
+   - **行为（Behavior）**：组件固有的、与业务无关的交互逻辑。例如，Tabs 组件中"点击某个 Trigger，就显示对应 Content"的行为，或是"管理当前激活的是第几个 Tab"的状态机。这些是组件之所以成为"它自己"的核心，应当被封装在内。
+   - **状态管理模式**：我会同时提供 **受控（Controlled）** 和 **非受控（Uncontrolled）** 两种模式。非受控模式开箱即用，内置最常见的状态管理逻辑；受控模式则将状态完全暴露给外部，允许业务方根据复杂的场景（如需要将组件状态与其他页面状态联动）进行自由定制。这为组件的适应性提供了双重保障。
+
+2. **业务逻辑（外部实现）**：
+   - **样式（Style）**：通用组件 **不应该包含任何写死的业务样式**。样式实现应当完全由业务方通过外部类（`externalClasses`）或 CSS 变量等方式注入。组件本身只提供一个"无头"的、功能完备的骨架，而"穿什么衣服"由业务场景决定。
+   - **内容（Content）**：组件内部通过 `slot` 预留好内容"插槽"。无论是状态页显示的文字、图片，还是选项卡里的具体内容，都应由业务方填充。通用组件只负责"在哪里显示"，而不关心"显示什么"。
+   - **业务副作用（Side Effects）**：通用组件不处理任何具体的业务逻辑。例如，Tabs 组件的切换可能需要触发一次网络请求。通用组件只负责在切换时派发一个 `change` 事件，并携带必要的参数（如 `index`）。至于监听到事件后是去发请求、还是做其他操作，则完全由业务方决定。
+
+3. **多层封装策略**：
+   开箱即用意味着专门化，而专门化天然与高自定义程度矛盾。为解决这一矛盾，我提供了多级的组件架构：
+   - **基础层（Headless）**：提供纯粹的功能骨架，拥有最高的自定义能力。这一层只包含最核心的结构和行为逻辑，没有任何预设样式和业务逻辑，适合需要高度定制化场景的业务方。
+   - **封装层（Pre-built）**：基于基础层构建的预封装组件，提供了常见业务场景下的默认实现和基础样式。这些组件继承了基础层的所有功能，同时添加了一些合理的默认值和简单样式，使业务方能够快速上手使用。
+   - **业务层（Business-specific）**：在特定业务场景下，可以基于封装层进一步构建业务专属组件，满足特定业务需求。
+
+通过这种分层设计，我们既保证了组件库的核心灵活性和可扩展性，又提供了便捷的使用体验。开发者可以根据项目需求，选择在合适的层级上进行开发或定制，从而在通用性和专用性之间取得完美平衡。
+
+这种方式将一个原本与业务深度绑定的组件，重构为了一个"纯粹"的功能单元和一个可任意定制的"皮肤"的组合，并通过多层封装策略满足不同场景的需求。这不仅极大地提升了组件的复用性，也使得它能够轻松适应未来多变的业务需求。
+
 ## 如果要你设计一个组件库，你会如何设计？
 
-## 如何优化一个长列表的渲染性能？
+参考：<https://www.bilibili.com/video/BV1PtbDzMEMa?p=59>
 
-长列表的性能瓶颈：
+核心目标与原则：
 
-- **DOM 节点过多**：浏览器需要创建和维护大量 DOM 元素，内存占用显著增加，布局计算（Layout）和绘制（Paint）负担加重
-- **React 协调成本**：`render` 函数执行时间变长；Diff 算法在大量节点间比较，效率降低；频繁地更新可能导致掉帧，用户体验差
+- **一致性**：视觉风格、交互行为要统一
+- **可复用性**：减少重复代码，提高开发效率
+- **高效性**：快速搭建高质量界面
+- **可维护性**：易于理解、修改和扩展
 
-**虚拟列表** 技术：
+设计上需要建立规范：
 
-- 核心思想：只渲染视口（Viewport）内可见的列表项
-- 按需渲染：当用户滚动列表时，动态计算并渲染新的可见项，移除已经移出视口的列表项
-- 视觉欺骗：通过精确计算和占位，让用户感觉整个列表都已经加载，但实际上 DOM 中只存在少量元素
+- 视觉设计
+  - 设计规范（Design System）
+  - 主题化能力
+  - 响应式设计
+- API 设计
+  - Props：清晰、可预测、最小暴露、遵循 HTML 标准
+  - Events：命名一致（e.g. `onOpen`、`onClose`），参数明确
+  - Slots/Children：提供灵活的内容分发机制
 
-TODO: ...
+技术架构选型：
+
+- 框架选择
+  - React / Vue / Angular/ Svelte
+  - Web Components（原生跨框架方案）
+  - 无框架（Vanilla JS + CSS）
+- 样式方案
+  - CSS Modules / Styled Components / TailwindCSS / CSS-in-JS
+  - SCSS / LESS
+  - CSS 变量的运用
+- 模块化与打包
+  - ESM 优先
+  - Tree Shaking 支持
+  - 输出格式（ESM, CJS, UMD）
+  - 按需加载
+
+开发体验（DX）与流程：
+
+- 文档
+- 测试：单元测试（Jest、Vitest）、集成测试、视觉回归测试（Percy、Chromatic）、端到端测试（Playwright、Cypress）
+- 开发环境：实时预览、热更新，Lint & Format
+- 贡献指南：代码风格、提交流程、分支策略
+
+可访问性（WCAG 标准）：
+
+- 键盘导航：Tab 顺序、焦点管理、快捷键支持
+- ARIA 属性：正确使用 `role`、`aria-*` 属性
+- 屏幕阅读器的兼容性
+- 颜色对比度、字体大小等视觉可访问性
+- 语义化 HTML
+
+版本控制与维护策略：
+
+- 语义化版本 MAJOR.MINOR.PATCH
+- 变更日志 CHANGELOG
+- 弃用策略：如何平滑过渡不再推荐使用的 API
+- 长期支持：对特定版本的长期支持
 
 ## 如何处理大小超过内存的超长字符串？
 
@@ -208,6 +365,7 @@ TODO: ...
 - **技术实现**：
   - 使用 `ReadableStream` + `TextDecoder` 逐块读取。
   - 示例：读取本地大文件（如 5GB 日志）：
+
     ```js
     async function readLargeFile(file) {
       const reader = file.stream().getReader();
@@ -257,6 +415,7 @@ for (let start = 0; start < file.size; start += CHUNK_SIZE) {
 
 - **适用场景**：复杂处理逻辑（如正则匹配、解析）。
 - **原理**：将分片数据传给 Worker，避免阻塞主线程。
+
   ```js
   // main.js
   const worker = new Worker('processor.js');
@@ -283,11 +442,13 @@ for (let start = 0; start < file.size; start += CHUNK_SIZE) {
 - **适用场景**：字符串过大且需复杂查询（如 GB 级日志分析）。
 - **原理**：前端只传递范围请求（如 `Range: bytes=0-1048575`），服务端返回分片数据。
   - 示例：HTTP 范围请求：
+
     ```js
     fetch('/api/log', {
       headers: { 'Range': 'bytes=0-1048575' } // 请求前 1MB
     }).then(r => r.text()).then(processChunk);
     ```
+
 - **直接 `readAsText` 读取整个文件**：会导致内存溢出。
 - **字符串拼接**：如 `str += newChunk`，会重复分配内存，导致性能指数级下降。
 - **存储到 `localStorage`**：容量限制（通常 5-10MB），且同步阻塞。
@@ -337,7 +498,6 @@ for (let start = 0; start < file.size; start += CHUNK_SIZE) {
 
 - 在 WebSocket 断开时自动重连（指数退避算法）。
 - 数据格式校验：用`try-catch`包裹`setOption`，防止后端返回异常数据导致图表崩溃。
-
 
 ## 如何实现视频元素的滚动动画？
 

@@ -233,6 +233,7 @@ React 会在根节点记录这个点击事件，当对应的组件完成 Hydrati
 import { hydrateRoot } from 'react-dom/client';
 const root = hydrateRoot(document.getElementById('root'), <App />);
 ```
+
 它告诉 React：“不要去创建新的 DOM 节点了，直接去‘激活’这个容器里已有的服务器渲染的 DOM 节点。”
 
 ## 综合：React 18 的并发渲染（Concurrent Rendering）是如何优化 Hydration 过程的？
@@ -262,31 +263,31 @@ const root = hydrateRoot(document.getElementById('root'), <App />);
 
 可以把它们看作是解决不同问题的、可以协同工作的两种技术：
 
-1.  **SSR**：
-    -   **解决的问题**：为 **Client Components** 预先渲染 HTML，改善首屏性能和 SEO。
-    -   **输出**：静态的 HTML 字符串。
-    -   **后续步骤**：仍然需要将相关的 JavaScript 发送到客户端进行 **Hydration**，以附加交互性。
+1. **SSR**：
+    - **解决的问题**：为 **Client Components** 预先渲染 HTML，改善首屏性能和 SEO。
+    - **输出**：静态的 HTML 字符串。
+    - **后续步骤**：仍然需要将相关的 JavaScript 发送到客户端进行 **Hydration**，以附加交互性。
 
-2.  **RSC**：
-    -   **解决的问题**：本身是一种新的组件模型，旨在减少客户端 JS、简化数据获取、更紧密地集成前端与后端。
-    -   **输出**：一种特殊的、描述 UI 的 **数据格式（或协议）**，而不是简单的 HTML。这个数据流可以被 React 在客户端更智能地协调和渲染。
-    -   **后续步骤**：不需要 Hydration，因为它们是纯静态的。
+2. **RSC**：
+    - **解决的问题**：本身是一种新的组件模型，旨在减少客户端 JS、简化数据获取、更紧密地集成前端与后端。
+    - **输出**：一种特殊的、描述 UI 的 **数据格式（或协议）**，而不是简单的 HTML。这个数据流可以被 React 在客户端更智能地协调和渲染。
+    - **后续步骤**：不需要 Hydration，因为它们是纯静态的。
 
 **协同工作模式（以 Next.js App Router 为例）：**
 
 一个现代 React 应用通常是混合的：
 
--   **Server Component**：用于获取数据、渲染非交互的 UI 部分（如布局、博客文章内容、产品描述）。
--   **Client Component**（使用 `'use client'` 指令）：用于渲染需要交互性的部分（如表单、按钮、复杂状态逻辑），这些组件仍然可以通过 SSR 预渲染其初始 HTML。
+- **Server Component**：用于获取数据、渲染非交互的 UI 部分（如布局、博客文章内容、产品描述）。
+- **Client Component**（使用 `'use client'` 指令）：用于渲染需要交互性的部分（如表单、按钮、复杂状态逻辑），这些组件仍然可以通过 SSR 预渲染其初始 HTML。
 
 **流程简化版：**
 
-1.  服务器接收到请求。
-2.  React 渲染 **Root Server Component**。
-3.  在渲染过程中，遇到 **Server Components** 就直接在服务器执行。
-4.  遇到 **Client Components** 时，服务器会渲染它们的初始 HTML（这就是 SSR 在起作用），并“标记”出它们的位置。
-5.  最终，服务器将 **Server Components 的序列化输出** 和 **Client Components 的预渲染 HTML** 混合在一起，发送给客户端。
-6.  客户端 React 接管后，只会对 **Client Components** 进行 Hydration，使其可交互。而 Server Components 的部分已经被静态内容填充，无需任何 JS 即可显示。
+1. 服务器接收到请求。
+2. React 渲染 **Root Server Component**。
+3. 在渲染过程中，遇到 **Server Components** 就直接在服务器执行。
+4. 遇到 **Client Components** 时，服务器会渲染它们的初始 HTML（这就是 SSR 在起作用），并“标记”出它们的位置。
+5. 最终，服务器将 **Server Components 的序列化输出** 和 **Client Components 的预渲染 HTML** 混合在一起，发送给客户端。
+6. 客户端 React 接管后，只会对 **Client Components** 进行 Hydration，使其可交互。而 Server Components 的部分已经被静态内容填充，无需任何 JS 即可显示。
 
 RSC 是一种新的组件范式，而 SSR 是一种渲染技术。RSC 的架构天然包含了 SSR（用于其中的 Client Components），但它的目标和范围远大于传统的 SSR。
 
@@ -337,10 +338,9 @@ React 的事件绑定则通过 **合成事件（SyntheticEvent）** 和 **事件
 
 另外，对于复杂的表单场景，可以用 HOC 封装**表单校验逻辑**。比如`withValidation`高阶组件统一处理表单字段校验、错误提示状态，被包裹的组件只需关注具体表单项的 UI 实现。这种模式让校验规则和 UI 实现彻底解耦，后续修改校验策略时不会影响业务组件。
 
-
 ## 什么是虚拟 DOM？有什么用？
 
-虚拟 DOM 就是使用 JavaScript 对象在内存中构建一个轻量级的 DOM 表示形式，用来模拟真实 DOM 的结构和状态。当需要更新 UI 时，优先修改虚拟 DOM，而不是直接操作真实 DOM。框架（如 React）会通过高效的算法对比虚拟 DOM 的前后状态（称为 diff 算法 ），找出最小的变化集合，然后将这些变化批量应用到真实 DOM 上。这种方式可以显著减少直接操作真实 DOM 的次数，从而提升性能。
+虚拟 DOM （Virtual DOM）就是使用 JavaScript 对象在内存中构建一个轻量级的 DOM 表示形式，用来模拟真实 DOM 的结构和状态。当需要更新 UI 时，优先修改虚拟 DOM，而不是直接操作真实 DOM。框架（如 React）会通过高效的算法对比虚拟 DOM 的前后状态（称为 diff 算法 ），找出最小的变化集合，然后将这些变化批量应用到真实 DOM 上。这种方式可以显著减少直接操作真实 DOM 的次数，从而提升性能。
 
 ## React Diff 和 Vue Diff 的实现机制是怎样的？有什么不同？
 
