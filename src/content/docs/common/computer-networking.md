@@ -345,3 +345,24 @@ Connection: keep-alive
 
 {...压缩后的 JSON 数据...}
 ```
+
+## 介绍一下 HTTP 中 GET 和 POST 方法的区别
+
+- 语义不同
+  - GET 用来“只读”取资源；
+  - POST 用来“写”新建或修改资源。
+- 报文格式不同
+  - GET 把参数放在 URL 查询串（`?a=1&b=2`），请求体为空；
+  - POST 把参数放在请求体里，URL 上看不到。
+- 缓存策略不同
+  - GET 默认可被浏览器、CDN、代理缓存；
+  - POST 默认不会缓存。
+- 长度限制不同
+  - GET 受 URL 长度限制（浏览器/服务器一般 2~8 KB 级）；
+  - POST 把数据放 body，理论上只受服务器配置限制（常见 2 MB–2 GB）。
+- 安全性/幂等性不同
+  - GET 是幂等的：多次调用结果一致，无副作用；
+  - POST 非幂等：每提交一次都可能产生新订单、新评论等副作用。 因此刷新或回退时，浏览器会警告“是否重新提交表单”——只对 POST 触发。
+- 编码类型不同
+  - GET 只能使用 URL 编码（`application/x-www-form-urlencoded`）；
+  - POST 还可以用 `multipart/form-data`（上传文件）、`application/json`、`text/xml` 等。
