@@ -681,3 +681,17 @@ JS 方案：Framer Motion、React Spring
 对于大部分 **通用的 UI 动画和手势交互**，比如卡片 Hover、点击缩放、拖拽等，我会选择 Framer Motion。它的声明式 API 非常高效，能快速实现现代化的动画效果。
 
 如果一个动画需要 **极致的自然感和物理感**，或者需要 **响应用户的连续、快速的交互**，比如一个可以被随意拖拽、甩动的卡片，可以使用 React Spring。它的物理模型能创造出无法被简单曲线模拟的真实动态。
+
+## `@vueuse/motion` 和 GSAP，这两种动画库的适用场景有什么不同？
+
+适用场景上：
+
+- `@vueuse/motion` 适合元素入场/出场过渡、简单交互反馈等轻量级动画。它和 Vue 的集成度很高，通过在元素上添加 `v-motion` 就可设置简单动画。例如，我使用该库实现的功能是随着滚动，列表中的元素缓入场景。
+- GSAP 适合更复杂的、要求精细时间轴控制的动画，或者是滚动驱动动画。例如，我使用该库实现的功能是视频元素从局部到全屏的渐进式缩放，主要使用了 GSAP 的 `ScrollTrigger`。
+
+为了优化其性能：
+
+- 使用 `transform:scale()` 代替 `width/height` 变更，利用 GPU 加速
+- 使用 `ScrollTrigger` 替代原生的 `scroll` 事件，因为它内部集成了节流和 RAF（`RequestAnimationFrame`）优化
+- 视频元素添加 `preload="auto"`
+- 使用 `will-change: transform` 提前告知浏览器优化策略
