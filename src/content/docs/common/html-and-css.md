@@ -15,6 +15,16 @@ title: HTML 和 CSS
 - web 存储 `localStorage`、`sessionStorage`
 - 表单控件、`calendar`、`date`、`time`、`email`、`url`、`search`
 
+## CSS3 新特性有哪些
+
+| 特性类别 | 代表属性 | 作用 |
+| :--- | :--- | :--- |
+| **强大选择器** | `:nth-child`, `[attr^="val"]` | 更精确地选择元素 |
+| **样式增强** | `border-radius`, `box-shadow`, `text-shadow` | 轻松实现圆角、阴影等视觉效果 |
+| **背景与渐变** | `linear-gradient`, `background-size` | 创建渐变背景，控制多背景图 |
+| **变形与动画** | `transform`, `transition`, `@keyframes` | 实现元素变换、平滑过渡和复杂动画 |
+| **新型布局** | `flexbox`, `media queries` | 构建灵活的一维布局和响应式页面 |
+
 ## 介绍一下一般页面布局的 DOM 结构
 
 ```html
@@ -69,13 +79,13 @@ Doctype 是一个文档类型声明。它位于 HTML 文档的最顶部，其核
 
 `initial-scale=1.0` 将**初始缩放级别设置为 100%，即不缩放**。它确保了 CSS 像素与设备独立像素的比例为 1:1，使得页面在加载时就能以预期的尺寸和比例呈现。
 
-
 ## HTML 文件中如何导入 CSS、JS？
 
 ### 一、导入 CSS
 
 1. 外部样式表（最推荐）
    放在 `<head>` 内，可缓存、可并行加载
+
    ```html
    <!-- 标准写法 -->
    <link rel="stylesheet" href="css/main.css">
@@ -85,6 +95,7 @@ Doctype 是一个文档类型声明。它位于 HTML 文档的最顶部，其核
    ```
 
 2. 内嵌样式表（小量关键样式，避免请求）
+
    ```html
    <style>
      :root{ --brand:#ff6b6b; }
@@ -93,6 +104,7 @@ Doctype 是一个文档类型声明。它位于 HTML 文档的最顶部，其核
    ```
 
 3. 行内样式（仅测试或邮件模板，不推荐生产）
+
    ```html
    <h1 style="color:var(--brand);">Hello</h1>
    ```
@@ -100,12 +112,14 @@ Doctype 是一个文档类型声明。它位于 HTML 文档的最顶部，其核
 ### 二、导入 JavaScript
 
 1. 外部模块脚本（ESM，现代浏览器首选）
+
    ```html
    <!-- 放在 <head> 也无需 defer，type="module" 自动 deferred -->
    <script type="module" src="js/app.js"></script>
    ```
 
 2. 外部普通脚本（兼容旧浏览器）
+
    ```html
    <!-- 加 defer 不阻塞 HTML 解析，执行顺序按出现先后 -->
    <script defer src="js/vendor.js"></script>
@@ -115,6 +129,7 @@ Doctype 是一个文档类型声明。它位于 HTML 文档的最顶部，其核
    ```
 
 3. 内联脚本（小量配置或性能打点）
+
    ```html
    <script>
      console.time('page');
@@ -123,6 +138,7 @@ Doctype 是一个文档类型声明。它位于 HTML 文档的最顶部，其核
    ```
 
 4. 动态导入（代码分割、按需加载）
+
    ```html
    <script type="module">
      import('./js/dialog.js').then(m => m.open());
@@ -134,11 +150,14 @@ Doctype 是一个文档类型声明。它位于 HTML 文档的最顶部，其核
 - CSS 放 `<head>`，防止“无样式闪烁”（FOUC）。
 - JS 默认阻塞解析；加 `defer` 或 `type="module"` 可解。
 - 同时支持 ESM 与旧浏览器：
+
   ```html
   <script type="module" src="js/app.mjs"></script>
   <script nomodule src="js/app-legacy.js"></script>
   ```
+
 - 跨域资源加 `crossorigin`，错误日志更精准：
+
   ```html
   <link rel="stylesheet" href="https://cdn.example.com/style.css" crossorigin="anonymous">
   <script src="https://cdn.example.com/lib.js" crossorigin="anonymous"></script>
@@ -156,28 +175,28 @@ Doctype 是一个文档类型声明。它位于 HTML 文档的最顶部，其核
 
 CSS 渲染阻塞是指**浏览器为了避免给用户展示未经样式修饰的内容（Flash of Unstyled Content, FOUC），而暂停构建渲染树和渲染页面，直到所需的 CSS 文件下载并解析完成的行为**。这会导致页面的首次渲染时间延迟。
 
-浏览器构建页面的关键步骤是：构建 DOM 树 -> 构建 CSSOM 树 -> 将两者合并成渲染树 -> 布局 -> 绘制。CSSOM 的构建是渲染树构建的前提。因为渲染树需要同时包含 DOM 和 CSSOM 的信息来计算每个节点的最终样式。当浏览器在解析 HTML 时遇到一个 `<link rel="stylesheet">` 标签，它会暂停 DOM 树的构建（尽管 DOM 解析可能仍在继续），去下载并解析这个 CSS 文件，并构建 CSSOM 树。只有在 CSSOM 构建完成后，浏览器才会继续构建渲染树并进行后续的布局和绘制操作。这个‘暂停等待’的过程就是所谓的‘渲染阻塞’。
+浏览器构建页面的关键步骤是：构建 DOM 树 -> 构建 CSSOM 树 -> 将两者合并成渲染树 -> 布局 -> 绘制。CSSOM 的构建是渲染树构建的前提。因为渲染树需要同时包含 DOM 和 CSSOM 的信息来计算每个节点的最终样式。当浏览器在解析 HTML 时遇到一个 `<link rel="stylesheet">` 标签，它会暂停 DOM 树的构建（尽管 DOM 解析可能仍在继续），去下载并解析这个 CSS 文件，并构建 CSSOM 树。只有在 CSSOM 构建完成后，浏览器才会继续构建渲染树并进行后续的布局和绘制操作。这个“暂停等待”的过程就是所谓的“渲染阻塞”。
 
 ## 如何减少 CSS 渲染阻塞带来的影响？
 
 1. **优化 CSS 资源本身**：
-    - **精简 CSS（Minification）**：移除不必要的空格、注释等，减少文件体积。
-    - **压缩（Gzip/Brotli）**：在服务器端开启压缩，进一步减少传输体积。
-    - **移除未使用的 CSS**：利用 PurgeCSS 等工具删除代码中未使用的样式。
+   - **精简 CSS（Minification）**：移除不必要的空格、注释等，减少文件体积。
+   - **压缩（Gzip/Brotli）**：在服务器端开启压缩，进一步减少传输体积。
+   - **移除未使用的 CSS**：利用 PurgeCSS 等工具删除代码中未使用的样式。
 2. **优化 CSS 的加载方式**：
-    - **将 CSS 放在`<head>`中**：尽早发现并加载 CSS 资源，这是最重要的实践。
-    - **避免使用`@import`**：`@import`会在 CSS 文件中才发起请求，会显著增加阻塞时间。应使用多个`<link>`标签代替。
-    - **使用媒体查询（Media Queries）**：对某些 CSS 资源标记`media`属性，浏览器会优先处理匹配当前环境的 CSS，而将不匹配的（如`media="print"`）标记为低优先级，**从而避免它们阻塞渲染**。
+   - **将 CSS 放在`<head>`中**：尽早发现并加载 CSS 资源，这是最重要的实践。
+   - **避免使用`@import`**：`@import`会在 CSS 文件中才发起请求，会显著增加阻塞时间。应使用多个`<link>`标签代替。
+   - **使用媒体查询（Media Queries）**：对某些 CSS 资源标记`media`属性，浏览器会优先处理匹配当前环境的 CSS，而将不匹配的（如`media="print"`）标记为低优先级，**从而避免它们阻塞渲染**。
 
-      ```html
-      <link href="style.css" rel="stylesheet">
-      <link href="print.css" rel="stylesheet" media="print"> <!-- 不阻塞渲染 -->
-      <link href="portrait.css" rel="stylesheet" media="orientation:portrait"> <!-- 条件阻塞 -->
-      ```
+   ```html
+   <link href="style.css" rel="stylesheet">
+   <link href="print.css" rel="stylesheet" media="print"> <!-- 不阻塞渲染 -->
+   <link href="portrait.css" rel="stylesheet" media="orientation:portrait"> <!-- 条件阻塞 -->
+   ```
 
 3. **高级优化**：
-    - **内联关键 CSS（Critical CSS）**：将首屏内容所需的关键样式直接内嵌到 HTML 的`<style>`标签中，这样浏览器就无需等待外部 CSS 文件即可开始渲染首屏，极大地减少阻塞时间。剩余的非关键 CSS 可以异步加载。
-    - **异步加载 CSS**：通过 JavaScript 动态添加`<link>`标签，或使用`preload`等资源提示来更精细地控制加载行为。
+   - **内联关键 CSS（Critical CSS）**：将首屏内容所需的关键样式直接内嵌到 HTML 的`<style>`标签中，这样浏览器就无需等待外部 CSS 文件即可开始渲染首屏，极大地减少阻塞时间。剩余的非关键 CSS 可以异步加载。
+   - **异步加载 CSS**：通过 JavaScript 动态添加`<link>`标签，或使用`preload`等资源提示来更精细地控制加载行为。
 
 ## 什么是 FOUC
 
@@ -192,20 +211,21 @@ CSS 渲染阻塞是指**浏览器为了避免给用户展示未经样式修饰�
 FOUC 的产生与**浏览器渲染页面的机制**密切相关。其根本原因在于：**CSS 样式表没有在 HTML 内容加载和解析的同时或之前被及时加载和应用**。
 
 具体来说，浏览器的渲染步骤大致如下：
-1.  解析 HTML，构建 DOM（文档对象模型）树。
-2.  解析 CSS，构建 CSSOM（CSS 对象模型）树。
-3.  将 DOM 和 CSSOM 结合，生成渲染树（Render Tree）。
-4.  根据渲染树进行布局（Layout），计算每个节点的位置和大小。
-5.  将布局后的节点绘制（Paint）到屏幕上。
+
+1. 解析 HTML，构建 DOM（文档对象模型）树。
+2. 解析 CSS，构建 CSSOM（CSS 对象模型）树。
+3. 将 DOM 和 CSSOM 结合，生成渲染树（Render Tree）。
+4. 根据渲染树进行布局（Layout），计算每个节点的位置和大小。
+5. 将布局后的节点绘制（Paint）到屏幕上。
 
 FOUC 就发生在第 2 步和第 5 步之间。如果 CSS 加载被阻塞或延迟，浏览器会先显示原始的 HTML（步骤 1），等 CSS 终于加载完成后，再重新计算样式、布局并绘制，这就导致了内容的“闪烁”。
 
-#### 常见的具体原因包括：
+#### 常见的具体原因包括
 
-1.  **使用 `@import` 引入 CSS**：`@import` 规则引入的样式表只有在宿主 CSS 文件被下载和解析后才会被发现和加载，这显著延迟了样式应用的时机。
-2.  **将 CSS 放在文档底部**：按照 HTML 的解析顺序，如果 `<link>` 标签被放在 `<body>` 的末尾而不是 `<head>` 中，浏览器会先渲染所有已解析的 HTML，最后才看到并加载 CSS。
-3.  **JavaScript 阻塞渲染**：浏览器在解析到 `<script>` 标签时会暂停 HTML 的解析（除非标记为 `async` 或 `defer`），先去下载和执行 JavaScript。如果 JavaScript 试图操作尚未加载的样式，或者只是阻塞了 DOM 构建，也会导致渲染延迟。
-4.  **旧版本 IE 的特定行为**：Internet Explorer（特别是 IE6/7/8 等旧版本）有一个特殊的行为：如果页面中的某个脚本试图访问某些尚未被加载的元素的样式属性，IE 会先渲染整个页面以确保脚本能获取到正确的值，等所有资源加载完后再重新渲染。这个机制是导致 IE 下 FOUC 的一个著名原因。
+1. **使用 `@import` 引入 CSS**：`@import` 规则引入的样式表只有在宿主 CSS 文件被下载和解析后才会被发现和加载，这显著延迟了样式应用的时机。
+2. **将 CSS 放在文档底部**：按照 HTML 的解析顺序，如果 `<link>` 标签被放在 `<body>` 的末尾而不是 `<head>` 中，浏览器会先渲染所有已解析的 HTML，最后才看到并加载 CSS。
+3. **JavaScript 阻塞渲染**：浏览器在解析到 `<script>` 标签时会暂停 HTML 的解析（除非标记为 `async` 或 `defer`），先去下载和执行 JavaScript。如果 JavaScript 试图操作尚未加载的样式，或者只是阻塞了 DOM 构建，也会导致渲染延迟。
+4. **旧版本 IE 的特定行为**：Internet Explorer（特别是 IE6/7/8 等旧版本）有一个特殊的行为：如果页面中的某个脚本试图访问某些尚未被加载的元素的样式属性，IE 会先渲染整个页面以确保脚本能获取到正确的值，等所有资源加载完后再重新渲染。这个机制是导致 IE 下 FOUC 的一个著名原因。
 
 ### 如何避免和修复 FOUC？
 
@@ -213,22 +233,22 @@ FOUC 就发生在第 2 步和第 5 步之间。如果 CSS 加载被阻塞或延�
 
 以下是几种有效的方法：
 
-1.  **将 CSS `<link>` 标签放在 `<head>` 中**
+1. **将 CSS `<link>` 标签放在 `<head>` 中**
     这是最简单也是最重要的方法。让浏览器在解析 HTML 内容 body 之前就先发现并开始加载 CSS。
 
-2.  **避免使用 `@import`**
+2. **避免使用 `@import`**
     使用 `<link>` 标签来链接外部样式表，而不是在 CSS 文件中使用 `@import`。因为 `<link>` 是并行加载的，而 `@import` 是串行的，会拖慢整体加载速度。
 
-3.  **使用 `media` 属性**
+3. **使用 `media` 属性**
     对于非首屏关键 CSS（如打印样式），可以给 `<link>` 标签加上 `media="print"` 等属性。浏览器会以低优先级加载这些样式表，从而避免阻塞关键渲染路径。
 
-4.  **内联关键 CSS (Critical CSS)**
+4. **内联关键 CSS (Critical CSS)**
     将首屏内容所必需的关键 CSS 代码直接内嵌到 `<head>` 的 `<style>` 标签中。这样可以确保浏览器无需等待外部 CSS 文件下载，就能立即渲染出带有基本样式的首屏内容。非关键 CSS 可以异步加载。
 
-5.  **用 JavaScript 动态加载 CSS 时隐藏内容**
+5. **用 JavaScript 动态加载 CSS 时隐藏内容**
     在一些特殊情况下（如使用 JavaScript 框架），如果必须异步加载 CSS，可以在加载完成前先使用 JavaScript 将 body 隐藏（例如 `<body style="visibility: hidden;">`），等 CSS 加载完毕后再显示出来。但这种方法要谨慎使用，如果 JavaScript 执行失败，页面可能永远无法显示。
 
-## 介绍一下在 HTML 中导入 JS 时，async 和 defer 的作用
+## 介绍一下在 HTML 中导入 JS 时，async 和 defer 的作用，以及脚本导入位置产生的影响
 
 - **默认（无 `async` 和 `defer`）**：阻塞 DOM 的构建，接受完成后就执行（所以要把 `<script>` 到 `<body>` 的末尾，即紧挨着 `</body>` 之前，而不是 `<head>` 中）
 - **`async`** ：不阻塞，接受完成就执行（不管文件中的书写顺序），一般独立的脚本就用这个（例如 Google Analysis）
@@ -255,20 +275,6 @@ FOUC 就发生在第 2 步和第 5 步之间。如果 CSS 加载被阻塞或延�
 - [行级内容 - MDN](https://developer.mozilla.org/zh-CN/docs/Glossary/Inline-level_content)
 - [块级内容 - MDN](https://developer.mozilla.org/zh-CN/docs/Glossary/Block-level_content)
 
-## 介绍一下 BFC、IFC、GFC、FFC
-
-- **BFC（Block Formatting Context，块格式化上下文）** 是一个独立的布局环境，块级元素（如 `div`）在其中垂直排列，独占一行。通过 `overflow: hidden`、`float` 或 `display: flow-root` 等方式触发（注意 `display` 的默认值是 `block`，但并不足以触发 BFC），能*包裹浮动元素*、*阻止外边距合并*，常用于解决父元素高度塌陷问题。
-- **IFC（Inline Formatting Context，内联格式化上下文）** 负责**内联元素**（如文本、`span`）的水平排列和换行，默认由块级容器生成。它控制文本对齐（如 `vertical-align`）、行高和换行逻辑，适合图文混排场景。
-- **GFC（Grid Formatting Context，网格格式化上下文）** 通过 `display: grid` 触发，提供*二维网格布局*能力，可定义行列结构（如 `grid-template-columns`），适合复杂的响应式页面设计，例如仪表盘布局。
-- **FFC（Flex Formatting Context，弹性格式化上下文）** 通过 `display: flex` 触发，以*一维弹性布局*为核心，支持子元素的灵活伸缩（`flex-grow`）和对齐（`justify-content`），常用于导航栏、按钮组等需要动态分配空间的场景。
-
-## 父元素高度坍塌问题是什么？解决方案有哪些？
-
-在 **子元素浮动或绝对定位** 时，父元素无法正确计算自身高度，表现为高度变为 0，即“消失”或“坍塌”。解决方案是触发**BFC（块格式化上下文）**，使父元素重新计算高度。常用方法有：
-
-- 设置 `overflow: hidden` 或 `overflow: auto`：触发 BFC，包裹浮动元素，但可能隐藏溢出内容。
-- 使用 `display: flow-root`：触发 BFC，包裹浮动元素，兼容性较好。
-
 ## 介绍一下 CSS “盒模型”
 
 **盒模型（Box Model）**：在网页布局中，每一个元素（无论是块级元素还是内联元素）都可以被看作是一个矩形的“盒子”。这个盒子由内到外依次由四个部分构成：
@@ -290,6 +296,113 @@ FOUC 就发生在第 2 步和第 5 步之间。如果 CSS 加载被阻塞或延�
   box-sizing: border-box;
 }
 ```
+
+参考：[box-sizing - CSS：层叠样式表 | MDN](https://developer.mozilla.org/zh-CN/docs/Web/CSS/box-sizing)
+
+## 介绍一下 BFC、IFC、GFC、FFC
+
+参考：[格式化上下文简介 - CSS：层叠样式表 | MDN](https://developer.mozilla.org/zh-CN/docs/Web/CSS/CSS_display/Introduction_to_formatting_contexts)
+
+### BFC
+
+**BFC（Block Formatting Context，块格式化上下文）** 是一个 **独立的（隔离的）** 布局环境。它能*包裹浮动元素*、*阻止外边距合并*，常用于解决父元素高度塌陷问题。
+
+可以通过以下这些方式触发 BFC：
+
+- `position`：`absolute` 或 `fixed`
+- `float`：不是 `none`
+- `overflow`：只要不是 `visible`，都可以触发 BFC，也就是说，`auto`、`hidden`、`scroll` 都可以
+- `display: flow-root`：现代的推荐做法
+- 根元素 `<html>` 本身就是 BFC
+
+> [!caution]
+> `display` 的默认值是 `block`，但并不足以触发 BFC。
+
+参考：[CSS BFC - Web 前端工程师面试题讲解_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1h54y1D7rb)
+
+### IFC
+
+**IFC（Inline Formatting Context，内联格式化上下文）** 负责**内联元素**（如文本、`span`）的水平排列和换行，默认由块级容器生成。它控制文本对齐（如 `vertical-align`）、行高和换行逻辑，适合图文混排场景。
+
+### GFC
+
+**GFC（Grid Formatting Context，网格格式化上下文）** 通过 `display: grid` 触发，提供*二维网格布局*能力，可定义行列结构（如 `grid-template-columns`），适合复杂的响应式页面设计，例如仪表盘布局。
+
+### FFC
+
+**FFC（Flex Formatting Context，弹性格式化上下文）** 通过 `display: flex` 触发，以*一维弹性布局*为核心，支持子元素的灵活伸缩（`flex-grow`）和对齐（`justify-content`），常用于导航栏、按钮组等需要动态分配空间的场景。
+
+## 父元素高度坍塌问题是什么？解决方案有哪些？
+
+在 **子元素浮动或绝对定位** 时，父元素无法正确计算自身高度，表现为高度变为 0，即“消失”或“坍塌”。解决方案是触发**BFC（块格式化上下文）**，使父元素重新计算高度。常用方法有：
+
+- 设置 `overflow: hidden` 或 `overflow: auto`：触发 BFC，包裹浮动元素，但可能隐藏溢出内容。
+- 使用 `display: flow-root`：触发 BFC，包裹浮动元素，兼容性较好。
+
+## 外边距塌陷问题是什么？如何解决？
+
+在块级元素的垂直方向上，相邻的两个或多个外边距（`margin`）会合并成一个外边距。这种现象只发生在垂直方向（即上下 `margin`），水平方向（左右 `margin`）不会发生塌陷。
+
+塌陷的规则如下：
+
+- 两个正数，取两者中的较大者：例如 `margin-bottom: 50px` 和 `margin-top: 30px`  相遇会导致最终距离变成 `50px`
+- 一正一负，去两者相加的和：例如 `margin-bottom: 50px` 和 `margin-top: -20px` 相遇会导致最终距离变成 `30px`
+- 两个负数，取两者中绝对值较大者：例如 `margin-bottom: -50px` 和 `margin-top: -30px` 相遇会导致最终举例变成 `-50px`
+
+典型场景：
+
+- 相邻兄弟元素
+- 父元素和第一个/最后一个子元素
+- 空的块级元素（例如 `<div style="margin-top: 50px; margin-bottom: 30px;"></div>` 这个空元素所占用的垂直空间不是 `80px`，而是 `50px`）
+
+如何解决？
+
+- 使用 `padding` 或 `border`
+- 创建 BFC
+- 使用 Flex 或 Grid 布局
+- 避免使用空元素
+
+## 介绍一下浮动布局
+
+浮动布局是 CSS 中的一种定位方式，通过 float 属性实现。最初设计浮动的目的是为了实现文本环绕图片的效果，现在也常用于创建多栏布局。
+
+浮动元素会脱离正常的文档流，然后被放置到其容器的左侧或右侧，文本和内联元素会环绕它。
+
+```css
+/* 基本语法 */
+.element {
+  float: left | right | none | inherit;
+}
+```
+
+优点：
+
+- 浏览器兼容性好，包括旧版浏览器
+- 容易实现文本环绕效果
+- 学习曲线相对平缓
+
+缺点：
+
+- 需要清除浮动，否则会导致布局问题
+- 不够灵活，响应式设计实现相对复杂
+- 现代布局技术（Flexbox 和 Grid）提供了更好的替代方案
+
+## 介绍一下清除浮动的几种方式
+
+由于浮动元素脱离了正常的文档流，它们不会影响其父元素的高度，这可能导致布局问题。为了解决这个问题，我们需要清除浮动。
+
+常用的清除浮动方法：
+
+- 空 div 法： 在浮动元素后添加一个空 div，并设置 `clear: both;`
+- `overflow` 法： 为父元素设置 `overflow: auto;` 或 `overflow: hidden;`
+- `clearfix` 法： 使用伪元素清除浮动（推荐）
+  ```css
+  .clearfix::after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+  ```
 
 ## `margin-top` 和 `top` 的区别是什么？
 
@@ -419,18 +532,15 @@ FOUC 就发生在第 2 步和第 5 步之间。如果 CSS 加载被阻塞或延�
 - **做法**：放弃传统的固定像素（`px`）宽度，改用 **相对单位** 如百分比（`%`）、视口宽度（`vw`）、视口高度（`vh`）来定义容器的宽度、间距等。
 - **目的**：使布局能够像液体一样，随着父容器或视口（Viewport）大小的变化而平滑地伸缩，为布局调整打下基础。
 
-
 **2. 弹性媒体（Flexible Media）**
 
 - **做法**：确保所有图片、视频等媒体元素也是可伸缩的。我通常会设置 `max-width: 100%;` 和 `height: auto;`。
 - **目的**：防止媒体元素的固定尺寸破坏流动布局，确保它们始终包含在其父容器内。
 
-
 **3. CSS 媒体查询（Media Queries）**
 
 - **做法**：这是响应式的‘开关’。使用 `@media` 规则，在特定的**断点（Breakpoints）** 处应用不同的 CSS 样式。我通常采用 **移动优先（Mobile-First）** 的设计原则，即先为小屏幕编写基础样式，再使用 `min-width` 媒体查询为逐渐增大的屏幕添加或覆盖样式。
 - **目的**：在布局发生质变的关键点（例如屏幕宽度从手机变为平板），通过改变 CSS 规则来大幅调整布局结构（如将单列变为多列）、调整字体大小或显示/隐藏某些元素。
-
 
 **4. 现代 CSS 布局技术（Modern CSS Layouts）**
 
@@ -547,6 +657,7 @@ CSS Transition（过渡）是一组用于控制简单动画效果的属性，它
 
 3. **尊重用户偏好**：
    - 有些用户对动画敏感，可能会感到眩晕。我们应该使用**媒体查询**`@media (prefers-reduced-motion: reduce)`来检测用户是否在系统中设置了减少动画的选项，并为这些用户提供无动画的替代方案。这不仅关乎性能，更关乎**可访问性**和包容性。
+
    ```css
    @media (prefers-reduced-motion: reduce) {
      * {
@@ -620,6 +731,7 @@ CSS Transition（过渡）是一组用于控制简单动画效果的属性，它
    ```
 
 3. **使用 `linear-gradient`**：可实现单边或多边边框，灵活性强，但代码复杂，兼容性一般
+
    ```css
    .element {
      position: relative;
@@ -709,3 +821,70 @@ contain: none | strict | content | [ layout || style || paint || size ]
 - `style`： counters / quotes 等某些“样式副作用”不会穿越该容器（contain: style）
 - `content` = layout + paint
 - `strict` = layout + paint + size （最“封闭”也最常用）
+
+## 介绍一下 CSS 各种选择器及优先级
+
+选择器：
+
+- ID 选择器：`#id`
+- 类选择器：`.class`
+- 属性选择器：`a[rel="external"]`
+- 伪类选择器：`a:hover`
+- 元素选择器：`div`
+- 相邻元素选择器：`h1 + p`
+- 子元素选择器：`ul > li`
+- 后代元素选择器：`li a`
+- 通配符选择器：`*`
+
+优先级：
+
+- `!important`
+- 内联样式（1000）
+- ID 选择器（0100）
+- 类选择器 / 属性选择器 / 伪类选择器（0010）
+- 元素选择器 / 伪元素选择器（0001）
+- 关系选择器 / 通配符选择器（0000）
+
+参考：[CSS 选择器 - CSS：层叠样式表 | MDN](https://developer.mozilla.org/zh-CN/docs/Web/CSS/CSS_selectors)
+
+## 介绍一下 rem 布局
+
+TODO:
+
+## 介绍一下百分比布局
+
+TODO:
+
+## 介绍一下 px/em/rem/vh/vw 的区别
+
+TODO:
+
+## 如何使用 rem 或 viewport 进行移动端适配？
+
+TODO:
+
+## 介绍一下 HTML DOM 的 event
+
+TODO:
+
+## 什么是 AJAX？原理是什么？
+
+AJAX（Asynchronous JavaScript and XML，异步 JavaScript 和 XML）并不是一种新的编程语言，而是一套把现有技术组合起来、实现“局部刷新”的解决方案。它的目标很简单：让网页在不重新加载整个页面的情况下，与服务器交换数据并更新部分页面内容，从而带来更流畅、更接近本地应用的交互体验。
+
+虽然名字里有 XML，但实际传输的格式可以是 JSON、HTML、纯文本等。其中，JSON 是目前最常用的。
+
+| 传统方式                          | AJAX 方式                           |
+| ----------------------------- | --------------------------------- |
+| 表单提交 → 服务器返回完整 HTML → 浏览器整页重绘 | JS 发出异步请求 → 服务器返回数据 → JS 局部更新 DOM |
+| 等待期间页面“卡死”                    | 请求异步进行，用户可操作其他功能                  |
+| 流量大、体验跳变                      | 流量小、体验顺滑                          |
+
+
+## 伪类和伪元素的区别是什么？
+
+- **伪类**：用于选择处于特定状态的已有元素，使用单冒号 `:`，如 `:hover`、`:focus`、`:first-child`、`:nth-child()`
+- **伪元素**：用于创建和样式化不在文档树中的元素（虚拟元素），使用双冒号 `::`，如 `::before`、`::after`
+
+## CSS 预处理器 Sass、Less、Stylus 有什么区别？
+
+TODO:
