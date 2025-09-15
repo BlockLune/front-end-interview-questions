@@ -2,6 +2,19 @@
 title: HTML 和 CSS
 ---
 
+## HTML5 新特性有哪些
+
+- 语义化标签
+- 音视频处理 API（`audio`，`video`）
+- `canvas` / WebGL
+- 拖拽释放(Drag and drop) API
+- `history` API
+- `requestAnimationFrame`
+- 地理位置（Geolocation）API
+- WebSocket
+- web 存储 `localStorage`、`sessionStorage`
+- 表单控件、`calendar`、`date`、`time`、`email`、`url`、`search`
+
 ## 介绍一下一般页面布局的 DOM 结构
 
 ```html
@@ -130,6 +143,14 @@ Doctype 是一个文档类型声明。它位于 HTML 文档的最顶部，其核
   <link rel="stylesheet" href="https://cdn.example.com/style.css" crossorigin="anonymous">
   <script src="https://cdn.example.com/lib.js" crossorigin="anonymous"></script>
   ```
+
+## 说说 HTML5 语义化标签的优点
+
+- 在没有 CSS 样式的情况下，页面也能呈现较好的结构效果
+- 代码结构清晰，易于阅读
+- 利于开发和维护
+- 方便其他设备（如屏幕阅读器）解析并根据语义渲染页面
+- 有利于搜索引擎优化（SEO），搜索引擎爬虫会根据不同的标签赋予不同的权重
 
 ## 什么是 CSS 渲染阻塞？
 
