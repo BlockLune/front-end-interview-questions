@@ -124,6 +124,62 @@ const uniqueArray = originalArray.reduce((accumulator, currentValue) => {
 }, []);
 ```
 
+## 实现对象精简
+
+<https://leetcode.cn/problems/compact-object/description/>
+
+精简对象与原始对象相同，只是将包含假值的键移除。该操作适用于对象及其嵌套对象。数组被视为索引作为键的对象。当 `Boolean(value)` 返回 `false` 时，值被视为假值。
+
+```js
+/**
+ * 递归地移除对象或数组中所有“假”值（falsy）。
+ * 假值指 Boolean(value) === false 的值，如：null、undefined、0、""、false、NaN。
+ *
+ * 规则：
+ * 1. 数组：先剔除假元素，再递归压缩剩余元素。
+ * 2. 普通对象：仅保留真值属性，并递归压缩其值。
+ * 3. 原始类型：直接返回，由调用者决定取舍。
+ *
+ * 注意：typeof null === 'object'，因此要先判断 null。
+ *
+ * @param {Object|Array} obj - 待压缩的对象或数组
+ * @return {Object|Array}    - 压缩后的新结构（不会修改原结构）
+ */
+function compactObject(obj) {
+  /* ---------- 1. 数组分支 ---------- */
+  if (Array.isArray(obj)) {
+    // 1.1 过滤掉假元素
+    const filtered = obj.filter(Boolean); // Boolean 会自动剔除 falsy 值
+    // 1.2 对剩下的每个元素继续递归压缩
+    return filtered.map(compactObject);
+  }
+
+  /* ---------- 2. 对象分支（排除 null） ---------- */
+  if (obj !== null && typeof obj === "object") {
+    const compacted = {}; // 新对象，存放真值属性
+
+    // 遍历自身可枚举属性（不含原型链上的）
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        const value = obj[key];
+
+        // 仅当真值时才保留，并递归压缩其内部结构
+        if (Boolean(value)) {
+          compacted[key] = compactObject(value);
+        }
+      }
+    }
+
+    return compacted;
+  }
+
+  /* ---------- 3. 原始值分支 ---------- */
+  // 字符串、数字、布尔、undefined、Symbol、BigInt、函数等直接返回
+  // 由上层调用者通过 Boolean(...) 决定是否丢弃
+  return obj;
+}
+```
+
 ## 实现版本号排序
 
 `(a, b) => a - b`: 升序
