@@ -7,32 +7,34 @@ title: 计算机网络
 HTTP 状态码主要分五类，用 *数字开头* 区分：
 
 - **1xx（信息性状态）**
-  - 101 (Switching Protocols): 协议切换（比如 WebSocket 升级）
+  - **101 (Switching Protocols)**: 协议切换（比如 WebSocket 升级）
 
 - **2xx（成功）**
-  - 200 (OK): 操作成功，并将请求的数据返回
-  - 201 (Created): 资源已创建
-  - 204 (No Content): 操作成功，但无返回内容
-  - 206 (Partial Content): 部分内容，用于断点续传
+  - **200 (OK)**: 操作成功，并将请求的数据返回
+  - **201 (Created)**: 资源已创建
+  - **204 (No Content)**: 操作成功，但无返回内容
+  - **206 (Partial Content)**: 部分内容，用于断点续传
 
 - **3xx（重定向）**
-  - 301: 永久重定向
-  - 302: 临时重定向
-  - 304: 资源未修改，配合缓存使用
+  - **301 (Moved Permanently)**: 永久重定向
+  - **302 (Found)**: 临时重定向
+  - **304 (Not Modified)**: 资源未修改，配合缓存使用
 
 - **4xx（客户端错误）**
-  - 400: 请求错误
-  - 401: 未授权
-  - 403: 禁止访问
-  - 404: 资源不存在
-  - 405: 方法不被允许，比如 POST 接口不支持 GET
-  - 429: 请求太多，触发了速率限制
+  - **400 (Bad Request)**: 请求错误
+  - **401 (Unauthorized)**: 未授权
+  - **403 (Forbidden)**: 禁止访问
+  - **404 (Not Found)**: 资源不存在
+  - **405 (Method Not Allowed)**: 方法不被允许，比如 POST 接口不支持 GET
+  - **429 (Too Many Requests)**: 请求太多，触发了速率限制
 
 - **5xx（服务器错误）**
-  - 500 (Internal Server Error): 内部错误
-  - 502 (Bad Gateway): 网关错误，比如 Nginx 后端服务挂了
-  - 503 (Service Unavailable): 服务不可用，常用于限流
-  - 504 (Gateway Timeout): 网关超时
+  - **500 (Internal Server Error)**: 内部错误
+  - **502 (Bad Gateway)**: 网关错误，比如 Nginx 后端服务挂了
+  - **503 (Service Unavailable)**: 服务不可用，常用于限流
+  - **504 (Gateway Timeout)**: 网关超时
+
+参考：[HTTP 响应状态码 - HTTP | MDN](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Reference/Status)
 
 ## 502 和 504 状态码有什么区别？
 
