@@ -33,8 +33,7 @@ const ExposureSensor = ({ children, onVisible }) => {
         if (entry.isIntersecting) {
           if (onVisible) {
             onVisible(entry);
-          }
-        }
+          } }
       },
       {
         threshold: 0.5,
@@ -73,6 +72,66 @@ const ExposureSensor = ({ children, onVisible }) => {
 }
 ```
 
+## 实现滚动到顶部
+
+```js
+window.scrollTo({top: 0, behavior: 'smooth'});
+```
+
+## 实现某元素滚动到可视区域
+
+```js
+target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+```
+
+## 实现“发布-订阅”
+
+<https://leetcode.cn/problems/event-emitter>
+
+```ts
+type Callback = (...args: any[]) => any;
+type Subscription = {
+  unsubscribe: () => void;
+};
+
+class EventEmitter {
+  private events: Map<string, Set<Callback>> = new Map();
+
+  subscribe(eventName: string, callback: Callback): Subscription {
+    if (!this.events.has(eventName)) {
+      this.events.set(eventName, new Set());
+    }
+    this.events.get(eventName)!.add(callback);
+
+    return {
+      unsubscribe: () => {
+        const callbacks = this.events.get(eventName);
+        if (callbacks) {
+          callbacks.delete(callback);
+          if (callbacks.size === 0) {
+            this.events.delete(eventName);
+          }
+        }
+      }
+    };
+  }
+
+  emit(eventName: string, ...args: any[]): any[] {
+    const callbacks = this.events.get(eventName);
+    if (!callbacks) return [];
+
+    return Array.from(callbacks).map(cb => {
+      try {
+        return cb(...args);
+      } catch (e) {
+        console.error('Event callback error:', e);
+        return undefined;
+      }
+    });
+  }
+}
+```
+
 ## 实现一个数组扁平化函数
 
 ```js
@@ -90,6 +149,8 @@ function flatten(arr) {
 
 如果限制扁平化层数：
 
+<https://leetcode.cn/problems/flatten-deeply-nested-array>
+
 ```js
 function flatten(arr, depth = 1) {
    const result = [];
@@ -102,6 +163,8 @@ function flatten(arr, depth = 1) {
    }
 }
 ```
+
+ES2019 以上版本，可使用 [`Array.prototype.flat()`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/flat)
 
 ## 实现数组去重
 
@@ -379,6 +442,8 @@ new MyPromise((resolve, reject) => {
 
 ## 实现 once
 
+<https://leetcode.cn/problems/allow-one-function-call>
+
 ```js
 const once = (fn) => {
   let done = false;
@@ -391,6 +456,8 @@ const once = (fn) => {
 ```
 
 ## 实现 memorize
+
+<https://leetcode.cn/problems/memoize>
 
 ```js
 function memoize(fn: Fn): Fn {
@@ -408,6 +475,8 @@ function memoize(fn: Fn): Fn {
 ```
 
 ## 实现对所有重叠区间的合并
+
+<https://leetcode.cn/problems/merge-intervals>
 
 ```js
 /**
@@ -578,6 +647,8 @@ console.log(findPath(tree, 'xyz'));  // null
 
 ## 求最长无重复字符子字符串的长度
 
+<https://leetcode.cn/problems/longest-substring-without-repeating-characters>
+
 <details>
 <summary>暴力方法</summary>
 
@@ -621,74 +692,30 @@ function isUnique(s, start, end) {
 滑动窗口（时间 O(n)，空间 O(min(m, n))）：
 
 ```js
-function lengthOfLongestSubstring(s) {
-  // 初始化最大长度为 0
+function lengthOfLongestSubstring(s: string): number {
   let maxLength = 0;
-  // 左指针，表示当前无重复子串的起始位置
+  let charMap = new Map();
+
   let left = 0;
-  // 使用 Map 来存储字符及其最后出现的位置
-  const charMap = new Map();
+  for (let right = 0; right < s.length; ++right) {
+    const ch = s.charAt(right);
 
-  // 右指针从 0 开始遍历字符串
-  for (let right = 0; right < s.length; right++) {
-    const currentChar = s[right];
-
-    // 如果当前字符已经在 Map 中存在，并且其位置在左指针的右侧或相同
-    // 说明出现了重复字符
-    if (charMap.has(currentChar) && charMap.get(currentChar) >= left) {
-      // 将左指针移动到重复字符的下一个位置
-      left = charMap.get(currentChar) + 1;
+    // 如果出现了已经发现过的字符，
+    // 并且它在当前窗口内（通过 charMap.get(ch) >= left 判断），
+    // 那么，就需要更新 left，
+    // 使窗口的左边界右移
+    if (
+      charMap.has(ch) && // 碰到已经发现过的字符
+      charMap.get(ch) >= left // 确保 left 永远只会向右移动
+    ) {
+      left = charMap.get(ch) + 1;
     }
 
-    // 更新当前字符的最新位置
-    charMap.set(currentChar, right);
-    // 计算当前窗口的长度并更新最大长度
+    charMap.set(ch, right);
     maxLength = Math.max(maxLength, right - left + 1);
   }
-
   return maxLength;
-}
-
-// 扩展版本：同时返回最长子串本身
-function findLongestSubstring(s) {
-  let maxLength = 0;
-  let start = 0;
-  const charMap = new Map();
-  let longestSubstring = "";
-
-  for (let end = 0; end < s.length; end++) {
-    const currentChar = s[end];
-
-    // 如果字符已存在且在当前窗口内（位置》=start）
-    if (charMap.has(currentChar) && charMap.get(currentChar) >= start) {
-      // 移动 start 到重复字符的下一个位置
-      start = charMap.get(currentChar) + 1;
-    }
-
-    // 更新字符的最新位置
-    charMap.set(currentChar, end);
-
-    // 计算当前窗口长度
-    const currentLength = end - start + 1;
-
-    // 如果找到更长的子串
-    if (currentLength > maxLength) {
-      maxLength = currentLength;
-      longestSubstring = s.substring(start, end + 1);
-    }
-  }
-
-  return { length: maxLength, substring: longestSubstring };
-}
-
-// 使用示例
-console.log(lengthOfLongestSubstring("abcabcabc")); // 输出：3
-console.log(lengthOfLongestSubstring("bbbbb")); // 输出：1
-console.log(lengthOfLongestSubstring("pwwkew")); // 输出：3
-
-// 使用扩展版本
-const result = findLongestSubstring("abcabcabc");
-console.log(result); // 输出：{ length: 3, substring: "abc" }
+};
 ```
 
 ## 实现一个洗牌算法
@@ -819,6 +846,8 @@ console.log(addLargeNumbers('999', '1')); // 输出："1000"
 
 ## 实现 LRU
 
+<https://leetcode.cn/problems/lru-cache>
+
 ```js
 /**
  *  LRU 缓存（ES6）
@@ -834,7 +863,7 @@ class LRUCache {
       throw new TypeError('capacity must be a positive integer');
     }
     this.capacity = capacity;
-    this.map = new Map(); // key -> value
+    this.map = new Map();
   }
 
   /**
@@ -865,13 +894,13 @@ class LRUCache {
     if (this.map.has(key)) {
       // 已存在，先删除旧位置
       this.map.delete(key);
-    } else if (this.map.size >= this.capacity) {
+    } else if (this.map.size >= this.capacity) { // 注意此处是 `.size` 而非 `.size()`
       // 容量满，淘汰第一个（最久未使用）
       const firstKey = this.map.keys().next().value;
       this.map.delete(firstKey);
     }
     this.map.set(key, value);
-    return this; // 链式调用
+    return this; // 允许链式调用
   }
 
   /**
