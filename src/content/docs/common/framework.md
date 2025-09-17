@@ -463,19 +463,6 @@ Vue 通过约定和官方套件提供了更 **结构化** 和 **易于上手** �
 
 通过组合使用这两种机制，我们可以构建一个既能全局兜底、又能局部优雅降级的健壮的错误处理系统。
 
-## 如何设计一个 React Hook，每次调用，返回上次传入的参数？
-
-```jsx
-import { useRef } from 'react';
-
-function usePrevious(value) {
-  const ref = useRef();
-  const previous = ref.current;
-  ref.current = value;
-  return previous;
-}
-```
-
 ## React Router 中的 `Link` 组件和 `a` 标签有什么区别？
 
 - `Link` 组件是 React Router 提供的组件，用于在单页应用中实现页面跳转，它会通过 `history` 对象来实现页面跳转，不会重新加载页面，只会更新 URL 和渲染对应的组件。
@@ -587,7 +574,49 @@ React 的调度器（Scheduler）是 React 实现**高效响应式更新**的核
 
 兄弟组件无法直接通信，可以通过状态提升（将共享状态提升到父组件，再通过 props 传递）、全局状态管理来实现（例如 React 直接使用 Context 或引入 Redux、Zustand 等，Vue 引入 Pinia 等）。
 
+## React 中的状态提升是什么？有什么优缺点？
+
+**状态提升（Lifting State Up）** ：将一些组件的共享状态移至最近的共同父组件中（让父组件持有状态），再由父组件通过 props 将状态传递给子组件。若子组件需要修改状态，则通过父组件传递回调函数（Updater）给子组件来实现。
+
+通过状态提升，实现了：
+
+- 多个组件反映相同的数据变化
+- 保持数据流的单向性和可预测性
+- 保持“唯一数据源（Single Source of Truth）”
+
+状态提升带来的问题：
+
+- **Prop Drilling**：状态可能需要通过许多中间层组件传递，而这些中间层组件本身可能并不需要这些 props
+- **父组件膨胀**：最近共同父组件可能承载过多无关状态和逻辑，变得臃肿
+- **潜在性能问题**：父组件状态更新可能引发所有子组件（包括未直接受该状态影响的组件）重新渲染，需配合 `React.memo` 进行优化
+
+状态提升的适用场景：
+
+- 只有少数几个组件需要共享状态
+- 组件层级关系相对简单
+- 逻辑清晰、易于维护
+
+在以下场景中，需要考虑替代方案：
+
+- Prop Drilling 过深
+- 全局状态，或跨多模块共享的状态
+- 父组件逻辑复杂的情况
+
+替代方案包括：
+
+- **Context API**：官方 API，适用于中等复杂应用，但它的更新会导致所有消费该 Context 的组件重新渲染，所以需要谨慎设计
+- **状态管理库（Redux / Zustand / Jotai ...）**：适用于状态复杂的大型复杂应用，或需要高级功能（中间件、Dev Tools）的场景，它们提供了更结构化、可扩展的方案，但引入了学习成本和额外库体积。
+
 ## 为什么需要全局状态管理？具体介绍一下 React 中的全局状态管理
+
+- 跨多棵组件树：Portal、多窗口、微前端、SSR Hydration 都需要“跳出”局部树。
+- 跨路由/页面：登录态、主题、国际化、权限、购物车。
+- 跨时间：用户操作序列化、撤销/重做、调试时光机。
+- 高频写+低频读 or 反之：局部状态提升会造成“父级反复渲染”或“prop drilling”。
+- 多数据源同步：WebSocket、IndexedDB、URL、Worker、DevTools 需要统一收敛。
+- 团队协作：不同 Feature 小组需要“约定好的数据契约”而非口头 props。
+
+TODO:
 
 ## React 中父组件如何调用子组件的方法？
 
@@ -629,6 +658,10 @@ wx.nextTick(() => {
 | **场景** | 操作更新后的 DOM | 获取更新后的页面数据 |
 
 ## Vue 生命周期
+
+<https://cn.vuejs.org/guide/essentials/lifecycle.html>
+
+TODO:
 
 ## 介绍一下 React 中的代码分割（Code Splitting）
 

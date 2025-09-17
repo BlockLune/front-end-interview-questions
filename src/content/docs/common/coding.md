@@ -72,6 +72,19 @@ const ExposureSensor = ({ children, onVisible }) => {
 }
 ```
 
+## 如何设计一个 React Hook，每次调用，返回上次传入的参数？
+
+```jsx
+import { useRef } from 'react';
+
+function usePrevious(value) {
+  const ref = useRef();
+  const previous = ref.current;
+  ref.current = value;
+  return previous;
+}
+```
+
 ## 实现滚动到顶部
 
 ```js
