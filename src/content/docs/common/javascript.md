@@ -1728,17 +1728,53 @@ console.log(curriedSum(1, 2, 3)) // 6
 - 窗口大小修改（resize）：窗口停止拖动再渲染
 - 拖拽时间（dragend）
 
+<https://leetcode.cn/problems/debounce>
+
 ```js
 function debounce(fn, t) {
   let timer;
   return function(...args) {
     clearTimeout(timer);
     timer = setTimeout(() => {
-      fn(...args);
+      fn.call(this, ...args);
     }, t);
   };
 }
 ```
+
+<details>
+<summary>注意此处的 `this` 绑定</summary>
+
+`setTimeout` 的第一个参数是一个回调函数，需要特别注意其 `this` 的指向问题。下面两个版本均是正确的：
+
+```js
+function debounce(fn, t) {
+  let timer;
+  return function (...args) {
+    const context = this;
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      fn.call(context, ...args);
+    }, t);
+  };
+}
+```
+
+```js
+function debounce(fn, t) {
+  let timer;
+  return function (...args) {
+    const context = this;
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      fn.call(context, ...args);
+    }, t);
+  };
+}
+```
+
+上面给出的是最精简的版本，因为箭头函数会在定义时自动继承外层作用域的 `this`，所以无须显式使用 `const context = this;` 来保存 `this` 指向。
+</details>
 
 ### 节流
 
@@ -1753,14 +1789,14 @@ function debounce(fn, t) {
 - ...
 
 ```js
-const throttle = (fn, delay) => {
+const throttle = (fn, t) => {
   let timer = null;
   return function(...args) {
     if (timer) return;
     timer = setTimeout(() => {
       fn.apply(this, args);
       timer = null;
-    }, delay);
+    }, t);
   };
 };
 ```

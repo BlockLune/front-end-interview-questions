@@ -72,7 +72,7 @@ const ExposureSensor = ({ children, onVisible }) => {
 }
 ```
 
-## 如何设计一个 React Hook，每次调用，返回上次传入的参数？
+## 设计一个 React Hook，每次调用它，都返回上次传入的参数
 
 ```jsx
 import { useRef } from 'react';
@@ -82,6 +82,122 @@ function usePrevious(value) {
   const previous = ref.current;
   ref.current = value;
   return previous;
+}
+```
+
+## 设计一个 React Hook：useDebounce
+
+`useDebounce` 用于防抖一个值
+
+```jsx
+import { useState, useEffect } from "react";
+
+/**
+ * 一个自定义 Hook，用于防抖一个值。
+ * @param value 需要进行防抖处理的值 (比如：搜索框的输入)
+ * @param delay 延迟时间 (毫秒)
+ * @returns 返回经过防抖处理后的值
+ */
+function useDebounce(value, delay) {
+  // 1. 创建一个 state 用于存储防抖后的值
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(
+    () => {
+      // 2. 设置一个定时器，在 delay 毫秒后更新 state
+      const timer = setTimeout(() => {
+        setDebouncedValue(value);
+      }, delay);
+
+      // 3. 清理函数：
+      // 在下一次 effect 执行前或者组件卸载时，清除上一个定时器
+      // 这是实现防抖的关键
+      return () => {
+        clearTimeout(timer);
+      };
+    },
+    // 只有当 value 或 delay 变化时，才重新执行 effect
+    [value, delay],
+  );
+
+  return debouncedValue;
+}
+
+export default useDebounce;
+```
+
+> [!tip]
+> `useEffect` 返回的回调函数会在以下两种情况下被执行：
+> - 组件卸载时（unmount）
+> - 依赖数组变化导致 effect 重新执行之前（即“下一次 effect 执行前”）
+
+## 设计一个 React Hook: useDebouncedCallback
+
+`useDebouncedCallback` 用于防抖一个函数
+
+```jsx
+import { useRef, useEffect, useCallback } from "react";
+
+function useDebouncedCallback(fn, delay) {
+  const fnRef = useRef(fn);
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    fnRef.current = fn;
+  }, [fn]);
+
+  const debounced = useCallback(
+    (...args) => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+      // React 组件中几乎不会用到 `this`
+      // 所以此处直接用的是 `fnRef.current(...args)`
+      timerRef.current = setTimeout(() => fnRef.current(...args), delay);
+    },
+    [delay],
+  );
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, []);
+
+  return debounced;
+}
+
+export default useDebouncedCallback;
+```
+
+或者，如果需要基于已有的 `debounce` 实现：
+
+```jsx
+import { useRef, useEffect, useMemo } from "react";
+
+function debounce(fn, t) {
+  let timer;
+  return function (...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.call(this, ...args), t);
+  };
+}
+
+export default function useDebouncedCallback(fn, delay) {
+  const fnRef = useRef(fn);
+
+  useEffect(() => {
+    fnRef.current = fn;
+  }, [fn]);
+
+  const debounced = useMemo(
+    () => debounce((...args) => fnRef.current(...args), delay),
+    [delay],
+  );
+  return debounced;
 }
 ```
 
