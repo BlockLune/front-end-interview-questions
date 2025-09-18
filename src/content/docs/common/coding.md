@@ -400,6 +400,46 @@ versions.sort(compareVersions);
 // 结果：['1.2.3', '1.10.0', '2.0.0', '2.0.1']
 ```
 
+## 实现一个函数，将平铺节点列表转换为一棵树
+
+```js
+function buildTree(list) {
+  const map = new Map();
+  const result = [];
+
+  list.forEach((node) => {
+    map.set(node.id, { ...node });
+  });
+
+  list.forEach((node) => {
+    const self = map.get(node.id);
+    if (node.parentId == null) {
+      result.push(self);
+    } else {
+      const parent = map.get(node.parentId);
+      if (parent) {
+        if (!parent.children) parent.children = [];
+        parent.children.push(self);
+      }
+    }
+  });
+
+  return result;
+}
+
+const data = [
+  { id: 1, name: "aaa1" },
+  { id: 3, name: "aaa3" },
+  { id: 2, name: "aaa2", parentId: 3 },
+  { id: 4, name: "aaa4", parentId: 2 },
+  { id: 5, name: "aaa5" },
+  { id: 6, name: "aaa6", parentId: 4 },
+  { id: 7, name: "aaa7", parentId: 4 },
+];
+
+console.log(JSON.stringify(buildTree(data), null, 2));
+```
+
 ## 数组实现 append()
 
 ```js
