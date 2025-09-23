@@ -214,11 +214,48 @@ Number('2025-01-01') // NaN
 
 ## 介绍一下数组的常用方法
 
-简单分类（有重叠，例如 `map()` 既是迭代方法又是返回新数组的方法）：
+- 修改原数组
+  - [`push(element0, element1, /* … ,*/ elementN)`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/push)：向数组末尾添加元素
+  - [`pop()`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/pop)：移除数组末尾的元素
+  - [`shift()`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/shift)：移除数组开头的元素
+  - [`unshift(element0, element1, /* … ,*/ elementN)`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/unshift)：向数组开头添加元素
+  - [`splice(start, deleteCount, item1, item2, /* … ,*/ itemN)`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/splice)：从指定位置删除特定数量的元素，然后可能地，插入一些元素
+  - [`reverse()`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/reverse)：反转数组元素的顺序
+  - [`sort(compareFunction)`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/sort)：对数组元素进行排序
+  - [`copyWithin(target, start, end)`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/copyWithin)：浅复制数组的一部分到同一数组中的另一个位置
+  - [`fill(value, start, end)`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/fill)：用固定值填充数组中指定范围的元素
 
-- 迭代方法：`forEach()`、`map()`、`filter()`、`reduce()`...
-- 修改源数组的方法（Mutator）：`push()`、`pop()`、`shift()`、`splice()`、`reverse()`...
-- 返回新数组的方法（Non-Mutating）：`slice()`、`concat()`、`map()`、`filter()`、`toReversed()`...
+- 不修改原数组，返回新数组
+  - [`concat(value1, value2, /* … ,*/ valueN)`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/concat)：合并两个或多个数组
+  - [`slice(start, end)`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/slice)：提取数组的一部分作为新数组
+  - [`flat(depth)`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/flat)：将嵌套数组扁平化
+  - [`flatMap(callback)`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap)：先映射每个元素，然后将结果扁平化
+  - [`map(callback)`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/map)：对每个元素执行函数并返回新数组
+  - [`filter(callback)`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/filter)：过滤满足条件的元素
+  - [`reduce(callback, initialValue)`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce)：从左到右对每个元素执行 reducer 函数
+
+- 数组遍历方法
+  - [`forEach(callback)`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach)：对每个元素执行函数
+  - [`every(callback)`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/every)：检测所有元素是否都满足条件
+  - [`some(callback)`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/some)：检测是否有至少一个元素满足条件
+  - [`find(callback)`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/find)：查找第一个满足条件的元素
+  - [`findIndex(callback)`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/findIndex)：查找第一个满足条件的元素的索引
+  - [`findLast(callback)`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/findLast)：查找最后一个满足条件的元素
+  - [`findLastIndex(callback)`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/findLastIndex)：查找最后一个满足条件的元素的索引
+  - [`keys()`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/keys)：返回包含数组索引的迭代器
+  - [`values()`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/values)：返回包含数组元素的迭代器
+  - [`entries()`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/entries)：返回包含索引-值对的迭代器
+
+- 其他实用方法
+  - [`includes(valueToFind, fromIndex)`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/includes)：判断数组是否包含某个值
+  - [`indexOf(searchElement, fromIndex)`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf)：返回元素在数组中第一次出现的索引
+  - [`lastIndexOf(searchElement, fromIndex)`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/lastIndexOf)：返回元素在数组中最后一次出现的索引
+  - [`join(separator)`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/join)：将数组所有元素连接成字符串
+  - [`toString()`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/toString)：返回数组的字符串表示
+  - [`toLocaleString()`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/toLocaleString)：返回数组的本地化字符串表示
+  - [`isArray(value)`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/isArray)：判断值是否为数组（静态方法）
+  - [`from(arrayLike, mapFn)`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/from)：从类数组对象或可迭代对象创建新数组（静态方法）
+  - [`of(element0, element1, /* … ,*/ elementN)`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/of)：用参数创建新数组（静态方法）
 
 ### reduce()
 
@@ -237,7 +274,7 @@ const sum = array.reduce(
 是否提供 `initialValue` 决定了 `accumulator` 的初始值和遍历开始的位置：
 
 - 提供：`accumulator` 初始值为 `initialValue`，从 index 为 0 的位置开始遍历
-- 不提供：`accumulator` 初始值为 arr[0]，从 index 1 0 的位置开始遍历，对空数组调用会抛出 `TypeError`
+- 不提供：`accumulator` 初始值为 arr[0]，从 index 为 1 的位置开始遍历，对空数组调用会抛出 `TypeError`
 
 ### splice()
 
@@ -248,14 +285,6 @@ const months = ['Jan', 'March', 'April', 'June'];
 months.splice(1, 0, 'Feb'); // 在索引 1 位置，删除 0 个元素，插入 'Feb'
 console.log(months); // ['Jan', 'Feb', 'March', 'April', 'June']
 ```
-
-### slice()
-
-Slice 意为“切片”，它返回一个 [start, end) 范围内的原数组的浅拷贝。
-
-### shift()
-
-移除数组的第一个元素，并改变数组长度
 
 ### flat(depth)
 
@@ -666,7 +695,7 @@ console.log(naked.surname);         // undefined
 console.log(naked.__proto__);       // 普通数据属性，值是 father
 
 Object.setPrototypeOf(naked, father);// 标准 API 不受限制
-console.log(naked.surname);         // Starkonsole.log("模拟new返回对象:", t2);
+console.log(naked.surname);         // Starkonsole.log("模拟 new 返回对象：", t2);
 
 // Output
 /*
