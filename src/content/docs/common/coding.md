@@ -710,6 +710,8 @@ console.log(isStraight([10, 11, 12, 13, 9])); // true
 
 ## 判断多叉树里有没有一条从根到叶的路，节点值加起来正好等于给定的数
 
+类似：<https://leetcode.cn/problems/path-sum>
+
 ```js
 class TreeNode {
     constructor(value) {
@@ -1158,73 +1160,58 @@ const reverseList = (head) => {
 
 ## 实现 K 个一组翻转链表
 
+<https://leetcode.cn/problems/reverse-nodes-in-k-group>
+
 ```js
-// 单链表节点定义
-class ListNode {
-  constructor(val, next = null) {
-    this.val = val;
-    this.next = next;
+/**
+ * Definition for singly-linked list.
+ * function ListNode(val, next) {
+ *     this.val = (val===undefined ? 0 : val)
+ *     this.next = (next===undefined ? null : next)
+ * }
+ */
+
+/**
+ * 反转从 start 开始到 endBefore（不包括 endBefore）的链表部分
+ * @param {ListNode} start - 要反转的起始节点
+ * @param {ListNode} endBefore - 反转范围的边界节点（不包含在反转范围内）
+ * @return {Array} [newHead, newTail] - 反转后的新头节点和新尾节点
+ */
+function reverseListSegment(start, endBefore) {
+  let prev = null;
+  let cur = start;
+  while (cur !== endBefore) {
+    const next = cur.next;
+    cur.next = prev;
+    prev = cur;
+    cur = next;
   }
+  return [prev, start]; // 返回反转后的头节点和尾节点
 }
 
 /**
- * 反转区间 [start, end) 的链表，返回新的头与尾
- * @param {ListNode} start
- * @param {ListNode} end
- * @return {[ListNode, ListNode]} [newHead, newTail]
- */
-const reverseRange = (start, end) => {
-  let prev = null;
-  let curr = start;
-  while (curr !== end) {
-    const next = curr.next;
-    curr.next = prev;
-    prev = curr;
-    curr = next;
-  }
-  // prev 是新头，start 变成新尾
-  return [prev, start];
-};
-
-/**
- * k 个一组反转链表
  * @param {ListNode} head
  * @param {number} k
  * @return {ListNode}
  */
-const reverseKGroup = (head, k) => {
+var reverseKGroup = function (head, k) {
   if (!head || k <= 1) return head;
 
-  // 先探一探有没有 k 个
-  let tail = head;
-  for (let i = 0; i < k; i++) {
-    if (!tail) return head;   // 不足 k 个，直接返回
-    tail = tail.next;
+  // 找到当前组的下一个组的起始节点
+  let nextGroupStart = head;
+  for (let i = 0; i < k; ++i) {
+    if (!nextGroupStart) return head; // 不足 k 个节点，不反转
+    nextGroupStart = nextGroupStart.next;
   }
 
-  // 反转这 k 个，得到新头 newHead
-  const [newHead, newTail] = reverseRange(head, tail);
+  // 反转当前组的 k 个节点
+  const [reversedHead, reversedTail] = reverseListSegment(head, nextGroupStart);
 
-  // newTail 是反转后的尾巴，继续递归处理后面
-  newTail.next = reverseKGroup(tail, k);
+  // 递归处理剩余部分，并将反转后的尾节点连接到下一组的处理结果
+  reversedTail.next = reverseKGroup(nextGroupStart, k);
 
-  return newHead;
+  return reversedHead;
 };
-
-/* ---------- 测试 ---------- */
-// 构造 1->2->3->4->5->6
-const buildList = (arr) =>
-  arr.reduceRight((next, val) => new ListNode(val, next), null);
-
-const printList = (head) => {
-  const out = [];
-  for (let p = head; p; p = p.next) out.push(p.val);
-  console.log(out.join('->'));
-};
-
-const head = buildList([1, 2, 3, 4, 5, 6]);
-const newHead = reverseKGroup(head, 3); // k = 3
-printList(newHead); // 3->2->1->6->5->4
 ```
 
 ## 实现一个函数，返回第 K 个大的数字
@@ -1292,4 +1279,52 @@ function partition(arr, left, right) {
   [arr[i], arr[right]] = [arr[right], arr[i]];
   return i;
 }
+```
+
+## 每日温度
+
+<https://leetcode.cn/problems/daily-temperatures>
+
+解法：单调栈，栈内元素保持单调递增或递减的顺序。时间复杂度 $O(n)$，本质上是用空间换时间。
+
+> [!tip]
+> 何时使用单调栈？常见的问题情形是：**一维数组**中，**寻找任一元素的左侧或右侧第一个比自己大或者小的元素**，即所谓的“下一个更大元素”、“前一个更小元素”问题。
+
+```js
+
+/**
+ * @param {number[]} temperatures
+ * @return {number[]}
+ */
+var dailyTemperatures = function (temperatures) {
+  // 1. 初始化结果数组，默认值为 0 (表示没有更高温度)
+  const answer = new Array(temperatures.length).fill(0);
+
+  // 2. 初始化单调栈。栈中存储的是尚未找到“下一个更高温度”的日期的索引
+  const stack = [];
+
+  // 3. 遍历每天的温度
+  for (let i = 0; i < temperatures.length; i++) {
+    const currentTemp = temperatures[i];
+
+    // 核心逻辑：维护一个单调递减栈
+    // 只要栈不为空，且当前温度高于栈顶索引对应的温度
+    // 注意此处是 while
+    while (
+      stack.length > 0 &&
+      currentTemp > temperatures[stack[stack.length - 1]]
+    ) {
+      // 栈顶索引找到了它的“下一个更高温度”
+      const prevIndex = stack.pop();
+
+      // 计算天数差并更新结果
+      answer[prevIndex] = i - prevIndex;
+    }
+
+    // 将当前日期的索引入栈，等待未来更高的温度
+    stack.push(i);
+  }
+
+  return answer;
+};
 ```
