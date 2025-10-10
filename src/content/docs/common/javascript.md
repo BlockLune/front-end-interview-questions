@@ -17,6 +17,7 @@ JS 中的基本数据类型有：
 // 但需要注意 typeof null 的结果是 "object"
 typeof "hello";           // "string"
 typeof 123;               // "number"
+typeof NaN;               // "number" - ⚠️ 注意：NaN 的类型也是 number
 typeof true;              // "boolean"
 typeof Symbol('id');      // "symbol"
 typeof 123n;              // "bigint"
@@ -49,6 +50,7 @@ Object.prototype.toString.call([]);   // "[object Array]"
 Object.prototype.toString.call({});   // "[object Object]"
 Object.prototype.toString.call('');   // "[object String]"
 Object.prototype.toString.call(123);  // "[object Number]"
+Object.prototype.toString.call(NaN);  // "[object Number]"
 ```
 
 > [!tip]
@@ -189,6 +191,157 @@ function isEmpty(obj) {
 > ```js
 >  console.log(Reflect.ownKeys([])); // ['length']
 > ```
+
+## 介绍一下解构
+
+```js
+// 一、数组解构基础 ----------------------------------
+const [a, b, c] = [1, 2, 3];
+console.log(a, b, c); // 1 2 3
+
+// 跳过元素
+const [first, , third] = [10, 20, 30];
+console.log(first, third); // 10 30
+
+// 默认值（当对应位置为 undefined 时生效）
+const [x = 1, y = 2] = [10];
+console.log(x, y); // 10 2
+
+// 嵌套解构
+const [p, [q, r]] = [1, [2, 3]];
+console.log(p, q, r); // 1 2 3
+
+// 与 rest 参数结合
+const [head, ...rest] = [100, 200, 300, 400];
+console.log(head); // 100
+console.log(rest); // [200, 300, 400]
+
+// 交换变量
+let m = 1, n = 2;
+[m, n] = [n, m];
+console.log(m, n); // 2 1
+
+
+// 二、对象解构基础 ----------------------------------
+const user = { name: "Alice", age: 25 };
+const { name, age } = user;
+console.log(name, age); // Alice 25
+
+// 属性重命名
+const { name: userName } = user;
+console.log(userName); // Alice
+
+// 默认值（仅在属性不存在或值为 undefined 时生效）
+const { gender = "female", age: years = 18 } = user;
+console.log(gender, years); // female 25
+
+// 嵌套解构
+const person = {
+  info: {
+    id: 1,
+    details: { city: "Tokyo", country: "Japan" }
+  }
+};
+const {
+  info: {
+    details: { city, country }
+  }
+} = person;
+console.log(city, country); // Tokyo Japan
+
+// 嵌套解构防止报错（加默认值）
+const broken = {};
+const {
+  info: {
+    details: { town } = {}
+  } = {}
+} = broken;
+console.log(town); // undefined（不会报错）
+
+// 对象 + 数组混合解构
+const complex = { title: "Book", tags: ["fiction", "classic"] };
+const {
+  title,
+  tags: [firstTag, secondTag]
+} = complex;
+console.log(title, firstTag, secondTag); // Book fiction classic
+
+
+// 三、函数参数解构 ----------------------------------
+
+// 对象参数解构 + 默认值
+function createUser({ name = "Tom", age = 18 } = {}) {
+  console.log("User:", name, age);
+}
+createUser({ name: "Bob" }); // User: Bob 18
+createUser(); // User: Tom 18（传入空时默认空对象 {}）
+
+// 数组参数解构
+function sum([a, b]) {
+  return a + b;
+}
+console.log(sum([5, 7])); // 12
+
+
+// 四、常用技巧与场景 ----------------------------------
+
+// 1️⃣ 从函数返回多个值
+function getPosition() {
+  return { x: 10, y: 20 };
+}
+const { x: posX, y: posY } = getPosition();
+console.log(posX, posY); // 10 20
+
+// 2️⃣ 返回数组解构
+function getCoords() {
+  return [100, 200];
+}
+const [coordX, coordY] = getCoords();
+console.log(coordX, coordY); // 100 200
+
+// 3️⃣ 快速提取对象属性
+const settings = { theme: "dark", lang: "en" };
+const { theme, lang } = settings;
+console.log(theme, lang); // dark en
+
+// 4️⃣ 结合解构快速访问嵌套数据
+const response = {
+  data: {
+    users: [{ id: 1, name: "Tom" }, { id: 2, name: "Jerry" }]
+  }
+};
+const {
+  data: {
+    users: [{ name: firstUser }]
+  }
+} = response;
+console.log(firstUser); // Tom
+
+// 5️⃣ 解构 + 动态属性名（计算属性名）
+const key = "score";
+const player = { name: "Luna", score: 99 };
+const { [key]: playerScore } = player;
+console.log(playerScore); // 99
+
+
+// 五、注意事项 ----------------------------------
+
+// ⚠️ 1. 解构右侧必须是可迭代（数组）或对象
+try {
+  const [oops] = null; // TypeError
+} catch (e) {
+  console.log("Error caught:", e.message);
+}
+
+// ⚠️ 2. 对象解构赋值时需加括号避免被解析为代码块
+let foo;
+({ foo } = { foo: "bar" });
+console.log(foo); // bar
+
+// ⚠️ 3. 默认值仅在值为 undefined 时生效
+const [val = 10] = [null];
+console.log(val); // null（不会使用默认值）
+```
 
 ## 介绍一下 `sort()`
 
@@ -476,6 +629,53 @@ console.log(greetLisi('你好', '很高兴认识你！'));
 const greetLisiWithHello = person.greet.bind(anotherPerson, '你好');
 console.log(greetLisiWithHello('很高兴认识你！'));
 // 输出："你好，我是 李四。很高兴认识你！"
+```
+
+## 介绍一下 try...catch 的捕获范围
+
+`try...catch` 只能捕获同步执行代码中的异常。即在 **同一个调用栈（call stack）** 内发生并被抛出的错误。
+
+```js
+try {
+  throw new Error("同步异常");
+} catch (err) {
+  console.log("捕获到：", err.message); // ✅ 输出 "同步异常"
+}
+```
+
+异步回调（如 `setTimeout`、事件监听、`Promise`）中的任务无法被捕获，因为它们在事件循环的下一轮执行，当异常抛出时，原来的 `try` 块已经结束，作用域已不存在。
+
+```js
+try {
+  setTimeout(() => {
+    throw new Error("异步异常");
+  }, 0);
+} catch (err) {
+  console.log("捕获不到：", err.message); // ❌ 不会执行
+}
+```
+
+正确的处理方案：
+
+| 场景                 | 解决方案                 |
+| ------------------ | -------------------- |
+| 回调函数（如 setTimeout） | 在回调内使用 `try...catch` |
+| Promise 异常         | 使用 `.catch()`        |
+| async/await 异常     | 外层 `try...catch`     |
+| 全局未捕获异常            | 使用全局监听事件（见下）             |
+
+浏览器环境：
+
+```js
+window.addEventListener("error", e => console.error("全局错误：", e.error));
+window.addEventListener("unhandledrejection", e => console.error("Promise 未捕获：", e.reason));
+```
+
+Node.js 环境：
+
+```js
+process.on("uncaughtException", err => console.error("未捕获异常：", err));
+process.on("unhandledRejection", err => console.error("Promise 未捕获：", err));
 ```
 
 ## 介绍一下 `Object.freeze`、`Object.seal`、`Object.preventExtensions`
@@ -2249,7 +2449,7 @@ Node.js 中处理 ES 模块（ESM）和 CommonJS（CJS）模块的互操作性�
 
 ## JS 中的最大安全整数是什么？为什么是这样的一个值？如果需要更大的整数，可以怎么办？
 
-最大安全整数是 9 007 199 254 740 991（$2^{53}−1$）。
+最大安全整数（`Number.MAX_SAFE_INTEGER`）是 9 007 199 254 740 991（$2^{53}−1$）。
 
 因为 JS 用 64 位浮点数，只能精确到 53 位，再大就丢精度。
 
@@ -2257,8 +2457,8 @@ Node.js 中处理 ES 模块（ESM）和 CommonJS（CJS）模块的互操作性�
 
 ## 对比一下 JS 中各种继承的实现方法
 
-TODO
+TODO:
 
 ## 介绍一下 instanceof
 
-TODO
+TODO:

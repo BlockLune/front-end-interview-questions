@@ -163,6 +163,24 @@ Doctype 是一个文档类型声明。它位于 HTML 文档的最顶部，其核
   <script src="https://cdn.example.com/lib.js" crossorigin="anonymous"></script>
   ```
 
+## 使用 `<link>` 和 `@import` 导入 CSS 有什么区别？
+
+```html
+<!-- 使用 link 标签 -->
+<link rel="stylesheet" href="styles.css">
+
+<!-- 在 CSS 中使用 @import -->
+<style>
+  @import url("styles.css");
+</style>
+```
+
+`<link>` 支持并行加载，而 `@import` 是串行的，前一个加载完，后一个才能加载。所以性能上，前一个更优。
+
+`<link>` 是 DOM 标签，可被 JS 动态创建或修改，而 `@import` 不支持。
+
+`<link>` 不会阻塞页面解析，而 `@import` 会。
+
 ## 说说 HTML5 语义化标签的优点
 
 - 在没有 CSS 样式的情况下，页面也能呈现较好的结构效果
