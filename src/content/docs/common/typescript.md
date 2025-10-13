@@ -26,17 +26,47 @@ const Status = {
 type Status = keyof typeof Status; // "Open" | "Closed"
 ```
 
-## any、never、unknown 的区别？
+## any、unknown、never 的区别？
 
-- **any**：关闭类型检查，可赋值给任何类型（不安全）。
-- **never**：表示不可能出现的值（如抛出错误）。
-- **unknown**：安全版 any，使用时需明确类型（如类型断言或类型守卫）。
+- **any**：关闭类型检查，可赋值给任何类型（不安全）
+- **unknown**：安全版 any，使用时需明确类型（如类型断言或类型守卫）
+- **never**：表示不可能出现的值（如抛出错误）
 
-**简单比喻**：
+```js
+// 1. any：完全放弃类型检查
+let anything: any = 4;
+anything = "oops";          // OK
+anything.push(123);         // 运行时才可能崩溃，TS 不报错
+let num: number = anything; // 任何类型都能互相赋值（危险）
 
-- `any` 是 “随意门” 🚪（无限制）。
-- `unknown` 是 “需要钥匙的盒子” 🔒（需验证）。
-- `never` 是 “空集合” 🚫（无值）。
+// 2. unknown：安全版 any，使用前必须“证明”类型
+let safe: unknown = 4;
+// safe.push(123);          // ❌ 直接访问属性/方法会报错
+if (typeof safe === "number") {
+  console.log(safe.toFixed(2)); // ✅ 类型守卫后安全使用
+}
+let n: number = safe as number; // 或显式断言
+
+// 3. never：表示“永远不会有值”的返回类型
+function fail(msg: string): never {
+  throw new Error(msg);   // 函数永不正常返回
+}
+
+function exhaustive(x: "a" | "b"): never {
+  // 借助 never 做穷尽检查
+  throw new Error(`Unhandled case: ${(x as never)}`);
+}
+
+// 使用示例
+let v: unknown = JSON.parse('{"type":"c"}'); // 解析结果未知
+if (v && typeof v === "object" && "type" in v && v.type === "a") {
+  console.log("got a");
+} else if (v && typeof v === "object" && "type" in v && v.type === "b") {
+  console.log("got b");
+} else {
+  exhaustive(v as never); // 如果还有别的值，编译器会报错
+}
+```
 
 ## TS 条件类型分配是什么？
 

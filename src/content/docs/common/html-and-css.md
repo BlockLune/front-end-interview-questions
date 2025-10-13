@@ -12,7 +12,7 @@ title: HTML 和 CSS
 - `requestAnimationFrame`
 - 地理位置（Geolocation）API
 - WebSocket
-- web 存储 `localStorage`、`sessionStorage`
+- Web 存储 `localStorage`、`sessionStorage`
 - 表单控件、`calendar`、`date`、`time`、`email`、`url`、`search`
 
 ## CSS3 新特性有哪些
@@ -188,6 +188,58 @@ Doctype 是一个文档类型声明。它位于 HTML 文档的最顶部，其核
 - 利于开发和维护
 - 方便其他设备（如屏幕阅读器）解析并根据语义渲染页面
 - 有利于搜索引擎优化（SEO），搜索引擎爬虫会根据不同的标签赋予不同的权重
+
+## 介绍一下 HTML5 的 Drag & Drop API
+
+HTML5 的 Drag & Drop API 允许我们在网页中实现拖放功能。例如，用户可使用鼠标选择可拖拽（draggable）元素，将元素拖拽到可放置（droppable）元素，并释放鼠标按钮以放置这些元素。
+
+主要事件：
+
+| 事件        | 触发元素   | 描述                         |
+| :---------- | :--------- | :--------------------------- |
+| `dragstart` | 被拖拽元素 | 开始拖拽时触发               |
+| `drag`      | 被拖拽元素 | 拖拽过程中持续触发           |
+| `dragenter` | 放置目标   | 拖拽元素进入目标时触发       |
+| `dragover`  | 放置目标   | 拖拽元素在目标上方时持续触发 |
+| `dragleave` | 放置目标   | 拖拽元素离开目标时触发       |
+| `drop`      | 放置目标   | 在目标上释放拖拽元素时触发   |
+| `dragend`   | 被拖拽元素 | 拖拽操作结束时触发           |
+
+核心要点：
+
+- `draggable="true"`：使元素成为可拖拽元素（默认情况下 `draggable` 的值是 `false`）
+- `dragstart` 事件：使用 `dragstart` 事件设置要传输的数据
+- `dragover` 事件：使用 `dragover` 事件阻止默认行为以允许放置
+- `drop` 事件：使用 `drop` 事件处理放置操作
+- `dataTransfer` 对象：通过 `dataTransfer` 对象在拖拽过程中传递数据
+
+> [!tip]
+> 所谓的 `droppable` 并不像 `draggable` 那样是一个属性，只是一种逻辑上的概念。它实际上是通过阻止默认行为来实现的（见下）。
+
+```jsx
+// 1. 设置可拖拽元素
+<div class="draggable-item" draggable="true" id="item1">项目 1</div>
+
+// 2. 处理拖拽开始事件
+document.addEventListener('dragstart', function(e) {
+  e.dataTransfer.setData('text/plain', e.target.id);
+  e.target.classList.add('dragging');
+});
+
+// 3. 允许放置
+dropContainer.addEventListener('dragover', function(e) {
+  e.preventDefault(); // 必须阻止默认行为才能允许放置
+});
+// 4. 处理放置事件
+dropContainer.addEventListener('drop', function(e) {
+  e.preventDefault();
+  const id = e.dataTransfer.getData('text/plain');
+  const draggableElement = document.getElementById(id);
+  this.appendChild(draggableElement);
+});
+```
+
+参考：[HTML 拖放 API - Web API | MDN](https://developer.mozilla.org/zh-CN/docs/Web/API/HTML_Drag_and_Drop_API)
 
 ## 什么是 CSS 渲染阻塞？
 
