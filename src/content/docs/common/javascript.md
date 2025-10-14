@@ -938,7 +938,8 @@ alert( rabbit.eats ); // true
 设置 `Rabbit.prototype = animal` 的字面意思是：“当创建了一个 `new Rabbit` 时，把它的 `[[Prototype]]` 赋值为 `animal`”。
 
 > [!note]
-> 如果在创建之后，`prototype` 属性有了变化（`F.prototype = <another object>`），那么通过 `new F` 创建的新对象也将随之拥有 **新的对象** 作为 `[[Prototype]]`，但 **已经存在的对象将保持旧有的值**。
+> 如果在创建之后，`prototype` 属性有了变化（`F.prototype = <another object>`），那么通过 `new F` 创建的新对象也将随之拥有 **新的对象** 作为 `[[Prototype]]`，但 **已经存在的对象将保持旧有的值**。这是“完全替换原型”的情况，只会影响新的实例。
+> 需要注意，这与“直接修改现有原型对象的属性”（如 `F.prototype.foo = bar`）有本质区别：当在现有原型对象上添加、修改或删除属性时，所有通过该构造函数创建的实例（**无论新旧**）都会立即受到影响，因为它们共享同一原型对象的引用。
 
 默认的 `prototype` 是一个只有属性 `constructor` 的对象，该 `constructor` 属性指向自身：
 
