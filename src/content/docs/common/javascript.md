@@ -37,6 +37,9 @@ typeof function() {}; // "function" - 特殊
 > 这是一个历史遗留 Bug。JS 早期实现中，`null` 的底层表示是 NULL 指针（0x00），而对象的类型标签恰好也是 0，所以 `typeof` 就将其误认为了对象
 
 > [!tip]
+> 正确的判断变量是否是 `NaN` 的方法：使用 `Number.isNaN()`（注意不是全局的 `isNaN()`，因为会先尝试将参数转换为数字，可能导致意外的结果）；或者，可以利用“`NaN` 是 JavaScript 中唯一不等于自身的值”这一特性，使用 `function isNaNValue(value) { return value !== value; }` 进行判断。
+
+> [!tip]
 > 正确的判断变量是否是 `null` 的方法：使用 `===`，例如 `if (myVar === null)`
 
 > [!tip]
