@@ -951,6 +951,81 @@ Rabbit.prototype = { constructor: Rabbit };
 */
 ```
 
+## 介绍一下 instanceof
+
+`instanceof` 运算符可以检测**构造函数的`prototype` 属性是否出现在对象的原型链中**。
+
+在 JavaScript 中，使用 `typeof` 并不能可靠地分辨对象类型（很多时候都返回 `"object"`），但判断一个对象是否是某个类的实例、或者是否继承自某个类的需求又是客观存在的。此外，相较于 `.constructor` 属性，`instanceof` 更加可靠（因为 `.constructor` 属性可被修改）。
+
+**用法：** `OBJECT instanceof CONSTRUCTOR`
+
+其中 `OBJECT` 是要检测的对象，`CONSTRUCTOR` 是用于检测的构造函数。返回值为 `true` 或 `false`。
+
+**过程（核心原理）：**
+
+`instanceof` 沿着 `OBJECT` 的原型链（即 `OBJECT` 的 `__proto__` 属性链）依次向上查找。在每一步，检查当前原型链上的节点是否**严格等于** `CONSTRUCTOR.prototype`。如果找到一个相等的节点，则返回 `true`；如果直到原型链的末端（即 `null`）仍未找到，则返回 `false`。
+
+```js
+// 数组
+console.log([] instanceof Array); // true
+console.log([] instanceof Object); // true
+
+// null 和 undefined
+// 它们都不是对象，且其 __proto__ 链无法与 Object.prototype 匹配
+console.log(null instanceof Object); // false
+console.log(undefined instanceof Object); // false
+
+// 原始类型与包装对象
+const primitiveStr = "foo";
+const objStr = new String("bar");
+console.log(primitiveStr instanceof Object); // false (原始值)
+console.log(objStr instanceof Object); // true (包装对象)
+```
+
+**使用 `instanceof` 的注意点：**
+
+1. **基于原型链：** 如果原型链在运行时被修改（例如通过 `Object.setPrototypeOf`），则 `instanceof` 的结果可能与预期的继承关系不符。
+2. **不能检测原始类型：** `instanceof` 要求左侧操作数必须是一个对象。对 `string`、`number`、`null`、`undefined` 等**原始类型值**使用 `instanceof` 总是返回 `false`，但其**包装对象**除外。
+3. **跨 `realm/iframe` 问题：** 不同 JavaScript 运行环境（如 `iframe`）有自己的全局对象和内置构造函数。如果一个对象从一个 `realm` 传递到另一个 `realm`，其构造函数在接收 `realm` 中将不匹配，导致 `instanceof` 返回 `false`。
+4. **`Symbol.hasInstance`：** ES6 引入了 `Symbol.hasInstance` 静态方法。通过在构造函数上定义该方法，可以**自定义** `instanceof` 的行为，它会优先于默认的原型链比对逻辑执行。
+
+## 介绍一下 `constructor` 属性
+
+对象的 `constructor` 属性返回一个引用，指向 **创建该实例对象的构造函数**。
+
+```js
+// 1. 使用函数构造器
+function Dog(name) {
+  this.name = name;
+}
+const myDog = new Dog('Buddy');
+
+console.log(myDog.constructor); // 输出: [Function: Dog]
+console.log(myDog.constructor === Dog); // 输出: true
+
+// 2. 使用 ES6 Class
+class Cat {
+  constructor(name) {
+    this.name = name;
+  }
+}
+const myCat = new Cat('Whiskers');
+
+console.log(myCat.constructor); // 输出: [Function: Cat]
+console.log(myCat.constructor === Cat); // 输出: true
+
+// 3. 使用字面量
+const arr = [1, 2];
+console.log(arr.constructor === Array); // 输出: true
+
+const obj = {};
+console.log(obj.constructor === Object); // 输出: true
+
+// 4. 原始类型 (会发生临时装箱)
+console.log("hello".constructor === String); // 输出: true
+console.log((123).constructor === Number); // 输出: true
+```
+
 ## 介绍一下 `new function` 语法和 `new` 操作符
 
 `new function` 实际上是对 **函数表达式** 使用 `new` 操作符，这会将函数视作 *构造函数*，创建一个函数实例并立即执行构造函数。具体而言，对函数使用 `new` 会进行如下步骤：
@@ -2460,9 +2535,5 @@ Node.js 中处理 ES 模块（ESM）和 CommonJS（CJS）模块的互操作性�
 如果要更大的整数，可以使用 `BigInt` 类型，或使用三方库。
 
 ## 对比一下 JS 中各种继承的实现方法
-
-TODO:
-
-## 介绍一下 instanceof
 
 TODO:

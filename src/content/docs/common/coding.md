@@ -891,6 +891,16 @@ function lengthOfLongestSubstring(s: string): number {
 
 ## 实现一个洗牌算法
 
+Fisher-Yates 算法：
+
+1. 从数组 **末尾** 开始遍历
+2. 随机选择 `[0, i]` 范围内的索引
+3. 交换当前元素与随机元素
+4. 继续向前直到遍历完成
+
+时间复杂度：$O(n)$
+空间复杂度：$O(1)$
+
 ```js
 function shuffle(array) {
   const arr = array.slice(); // 复制原数组，避免修改原始数据
