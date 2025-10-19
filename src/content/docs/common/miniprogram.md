@@ -67,4 +67,12 @@ title: 小程序
 
 这些差异体现了小程序在**性能优化**和**安全性**方面的设计权衡，但也带来了一定的功能限制。
 
-## TODO: 介绍一下小程序中的生命周期
+## 介绍一下小程序中的生命周期
+
+小程序中的生命周期主要分为三部分：**应用的生命周期**、**页面的生命周期**、**组件的生命周期**。
+
+参考：
+
+- [面试官：说说微信小程序的生命周期函数有哪些？ | web前端面试 - 面试官系列](https://vue3js.cn/interview/applet/lifecycle.html)
+- [小程序框架 / 逻辑层 / 页面生命周期](https://developers.weixin.qq.com/miniprogram/dev/framework/app-service/page-life-cycle.html)
+- [自定义组件 / 组件生命周期](https://developers.weixin.qq.com/miniprogram/dev/framework/custom-component/lifetimes.html)
