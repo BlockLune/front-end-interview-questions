@@ -844,6 +844,29 @@ CSS Transition（过渡）是一组用于控制简单动画效果的属性，它
 > - `flex-basis: 0%` 强制忽略内容宽度，以剩余空间为分配基准；
 > `flex-basis: auto` 则优先考虑内容固有尺寸。
 
+基于这三个属性，Flexbox 的空间分配流程如下：
+
+1. 计算 `flex-basis` 的和
+2. 比较 `flex-basis` 的和与容器宽度，决定是否应用 `flex-grow` 或 `flex-shrink`
+   - 如果 `flex-basis` 的和 < 容器宽度，应用 `flex-grow`
+   - 如果 `flex-basis` 的和 > 容器宽度，应用 `flex-shrink`
+   - 如果 `flex-basis` 的和 = 容器宽度，无须应用 `flex-grow` 或 `flex-shrink`
+3. 计算最终宽度
+
+分别来看：
+
+- `flex-grow` 的计算公式如下：
+   $$
+   最终宽度 = basis + (剩余空间 \times \frac{grow}{\sum{grow}})
+   $$
+- `flex-shrink` 的计算公式如下：
+   $$
+   最终宽度 = basis - (超出空间 \times \frac{basis \times shrink}{\sum{(basis \times shrink)}})
+   $$
+
+> [!tip]
+> 有剩余空间触发 `flex-grow` 时，是按照 `grow` 的比例分的；超出可用可见触发 `flex-shrink` 时，是按照 `basis * shrink` 的比例扣的。
+
 ## 介绍一下 CSS 中如何限制文本行数，以及超长显示省略号
 
 默认情况下，文本会自动换行。如果容器不够大，则会溢出。
